@@ -25,13 +25,11 @@ class _LanguagePageState extends State<LanguagePage> {
     spanish,
   ];
 
-  bool reordering = false;
-  ScrollController controller;
+  bool inReorder = false;
 
   @override
   void initState() {
     super.initState();
-    controller = ScrollController();
   }
 
   Widget _buildTile(Animation animation, Language lang, int index) {
@@ -130,18 +128,17 @@ class _LanguagePageState extends State<LanguagePage> {
         backgroundColor: theme.accentColor,
       ),
       body: ListView(
-        controller: controller,
-        physics: reordering ? const NeverScrollableScrollPhysics() : null,
+        physics: inReorder ? const NeverScrollableScrollPhysics() : null,
         children: <Widget>[
           ImplicitlyAnimatedReorderableList<Language>(
             items: selectedLanguages,
             shrinkWrap: true,
             areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
-            onReorderStarted: (item, index) => setState(() => reordering = true),
+            onReorderStarted: (item, index) => setState(() => inReorder = true),
             onReorderFinished: (movedLanguage, from, to, newData) {
               // Update the underlying data when the item has been reordered
               setState(() {
-                reordering = false;
+                inReorder = false;
 
                 selectedLanguages
                   ..clear()
@@ -215,11 +212,5 @@ class _LanguagePageState extends State<LanguagePage> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
   }
 }
