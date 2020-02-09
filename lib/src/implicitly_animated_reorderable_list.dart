@@ -11,21 +11,7 @@ typedef ReorderStartedCallback<E> = void Function(E item, int index);
 typedef ReorderFinishedCallback<E> = void Function(E item, int from, int to, List<E> items);
 
 class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Reorderable, E> {
-  /// The axis along which the scroll view scrolls.
-  ///
-  /// Defaults to [Axis.vertical].
-  final Axis scrollDirection;
-
   /// Whether the scroll view scrolls in the reading direction.
-  ///
-  /// For example, if the reading direction is left-to-right and
-  /// [scrollDirection] is [Axis.horizontal], then the scroll view scrolls from
-  /// left to right when [reverse] is false and from right to left when
-  /// [reverse] is true.
-  ///
-  /// Similarly, if [scrollDirection] is [Axis.vertical], then the scroll view
-  /// scrolls from top to bottom when [reverse] is false and from bottom to top
-  /// when [reverse] is true.
   ///
   /// Defaults to false.
   final bool reverse;
@@ -50,7 +36,7 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// On iOS, this identifies the scroll view that will scroll to top in
   /// response to a tap in the status bar.
   ///
-  /// Defaults to true when [scrollDirection] is [Axis.vertical] and
+  /// Defaults to true when scrollDirection is [Axis.vertical] and
   /// [controller] is null.
   final bool primary;
 
@@ -62,12 +48,12 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// Defaults to matching platform conventions.
   final ScrollPhysics physics;
 
-  /// Whether the extent of the scroll view in the [scrollDirection] should be
+  /// Whether the extent of the scroll view in the scrollDirection should be
   /// determined by the contents being viewed.
   ///
   /// If the scroll view does not shrink wrap, then the scroll view will expand
-  /// to the maximum allowed size in the [scrollDirection]. If the scroll view
-  /// has unbounded constraints in the [scrollDirection], then [shrinkWrap] must
+  /// to the maximum allowed size in the scrollDirection. If the scroll view
+  /// has unbounded constraints in the scrollDirection, then [shrinkWrap] must
   /// be true.
   ///
   /// Shrink wrapping the content of the scroll view is significantly more
@@ -106,10 +92,9 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     Duration insertDuration = const Duration(milliseconds: 500),
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
-    this.dragDuration = const Duration(milliseconds: 300),
     @required this.onReorderFinished,
+    this.dragDuration = const Duration(milliseconds: 300),
     this.onReorderStarted,
-    this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
     this.primary,
@@ -144,6 +129,8 @@ class ImplicitlyAnimatedReorderableListState<E>
     extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
   GlobalKey _dragKey;
   ScrollController _controller;
+
+  bool get isNested => false && widget.controller != null;
 
   double _listHeight = 0;
   double get _offset => _controller.offset;
@@ -193,6 +180,8 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void onDragStarted(Key key) {
     _onDragEnd?.call();
+
+    _measureChild(key);
     dragItem = _itemBoxes[key];
 
     if (dragIndex != null) {
@@ -393,18 +382,15 @@ class ImplicitlyAnimatedReorderableListState<E>
     _onDragEnd = () {
       if (dragIndex != null) {
         final toIndex = _itemBoxes[closest.key].index;
+        final item = dataSet.removeAt(dragIndex);
+        dataSet.insert(toIndex, item);
 
-        if (toIndex != dragIndex) {
-          final item = dataSet.removeAt(dragIndex);
-          dataSet.insert(toIndex, item);
-
-          widget.onReorderFinished?.call(
-            item,
-            dragIndex,
-            toIndex,
-            List<E>.from(dataSet),
-          );
-        }
+        widget.onReorderFinished?.call(
+          item,
+          dragIndex,
+          toIndex,
+          List<E>.from(dataSet),
+        );
       }
 
       _cancelDrag();
@@ -437,6 +423,7 @@ class ImplicitlyAnimatedReorderableListState<E>
       _dragDelta = 0.0;
       dragItem = null;
       _dragWidget = null;
+      _scrollAdjuster?.cancel();
 
       for (final key in _itemTranslations.keys) {
         _items[key]?.setTranslation(null);
@@ -475,16 +462,14 @@ class ImplicitlyAnimatedReorderableListState<E>
     });
   }
 
-  void _measureItem(Reorderable child, int index) {
-    postFrame(() {
-      final key = child.key;
-      final box = _items[key].context?.renderBox;
-      final offset = _itemOffset(key)?.translate(0, _offset);
+  void _measureChild(Key key, [int index]) {
+    final box = _items[key].context?.renderBox;
+    final offset = _itemOffset(key)?.translate(0, _offset);
 
-      if (box != null && offset != null) {
-        _itemBoxes[key] = _Item(key, box, index, offset);
-      }
-    });
+    if (box != null && offset != null) {
+      final i = index ?? _itemBoxes[key]?.index;
+      _itemBoxes[key] = _Item(key, box, i, offset);
+    }
   }
 
   @override
@@ -499,7 +484,7 @@ class ImplicitlyAnimatedReorderableListState<E>
             final item = dataSet[index];
 
             final Reorderable child = buildItem(context, animation, item, index);
-            _measureItem(child, index);
+            postFrame(() => _measureChild(child.key, index));
 
             if (dragKey != null && index == dragIndex) {
               final size = dragItem?.size;
@@ -524,14 +509,14 @@ class ImplicitlyAnimatedReorderableListState<E>
 
             return child;
           },
-          controller: _controller,
+          controller: !isNested ? _controller : null,
           initialItemCount: newData.length,
           padding: widget.padding,
-          physics: !inDrag ? widget.physics : const NeverScrollableScrollPhysics(),
+          physics: inDrag || isNested ? const NeverScrollableScrollPhysics() : widget.physics,
           primary: widget.primary,
           reverse: widget.reverse,
-          scrollDirection: widget.scrollDirection,
-          shrinkWrap: widget.shrinkWrap,
+          scrollDirection: Axis.vertical,
+          shrinkWrap: widget.shrinkWrap || isNested,
         ),
         if (_dragWidget != null) _buildDraggedItem()
       ],
