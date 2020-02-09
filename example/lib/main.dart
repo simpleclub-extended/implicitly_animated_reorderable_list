@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 
 import 'ui/lang_page.dart';
 import 'ui/ui.dart';
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
         statusBarColor: Colors.transparent,
       ),
     );
+
 
     return MaterialApp(
       title: 'Implicitly Animated Reorderable List Example',

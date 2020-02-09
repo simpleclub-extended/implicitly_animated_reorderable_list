@@ -23,6 +23,9 @@ class _LanguagePageState extends State<LanguagePage> {
     english,
     german,
     spanish,
+    afrikaans,
+    chinese,
+    portuguese,
   ];
 
   Widget _buildTile(Animation animation, Language lang, int index) {
@@ -174,7 +177,9 @@ class _LanguagePageState extends State<LanguagePage> {
               );
 
               if (result != null && !selectedLanguages.contains(result)) {
-                selectedLanguages.add(result);
+                setState(() {
+                  selectedLanguages.add(result);
+                });
               }
             },
             child: ListTile(

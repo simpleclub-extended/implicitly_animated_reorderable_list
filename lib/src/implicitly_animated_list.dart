@@ -2,7 +2,44 @@ import 'package:flutter/material.dart';
 
 import 'src.dart';
 
-class ImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget, E> {
+class ImplicitlyAnimatedList<E> extends StatelessWidget {
+  /// The data that this [ImplicitlyAnimatedList] should represent.
+  final List<E> items;
+
+  /// Called, as needed, to build list item widgets.
+  ///
+  /// List items are only built when they're scrolled into view.
+  final AnimatedItemBuilder<Widget, E> itemBuilder;
+
+  /// An optional builder when an item was removed from the list.
+  ///
+  /// If not specified, the [ImplicitlyAnimatedList] uses the [itemBuilder] with
+  /// the animation reversed.
+  final RemovedItemBuilder<Widget, E> removeItemBuilder;
+
+  /// An optional builder when an item in the list was changed but not its position.
+  ///
+  /// The [UpdatedItemBuilder] animation will run from 1 to 0 and back to 1 again, while
+  /// the item parameter will be the old item in the first half of the animation and the new item
+  /// in the latter half of the animation. This allows you for example to fade between the old and
+  /// the new item.
+  ///
+  /// If not specified, changes will appear instantaneously.
+  final UpdatedItemBuilder<Widget, E> updateItemBuilder;
+
+  /// Called by the DiffUtil to decide whether two object represent the same Item.
+  /// For example, if your items have unique ids, this method should check their id equality.
+  final ItemDiffUtil<E> areItemsTheSame;
+
+  /// The duration of the animation when an item was inserted into the list.
+  final Duration insertDuration;
+
+  /// The duration of the animation when an item was removed from the list.
+  final Duration removeDuration;
+
+  /// The duration of the animation when an item changed in the list.
+  final Duration updateDuration;
+
   /// The axis along which the scroll view scrolls.
   ///
   /// Defaults to [Axis.vertical].
@@ -75,6 +112,57 @@ class ImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget, E> {
 
   const ImplicitlyAnimatedList({
     Key key,
+    @required this.items,
+    @required this.itemBuilder,
+    @required this.areItemsTheSame,
+    this.removeItemBuilder,
+    this.updateItemBuilder,
+    this.insertDuration = const Duration(milliseconds: 500),
+    this.removeDuration = const Duration(milliseconds: 500),
+    this.updateDuration = const Duration(milliseconds: 500),
+    this.scrollDirection = Axis.vertical,
+    this.reverse = false,
+    this.controller,
+    this.primary,
+    this.physics,
+    this.shrinkWrap = false,
+    this.padding,
+  })  : assert(itemBuilder != null),
+        assert(areItemsTheSame != null),
+        assert(items != null),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      scrollDirection: scrollDirection,
+      reverse: reverse,
+      controller: controller,
+      primary: primary,
+      physics: physics,
+      shrinkWrap: shrinkWrap,
+      slivers: <Widget>[
+        SliverPadding(
+          padding: padding ?? const EdgeInsets.all(0),
+          sliver: SliverImplicitlyAnimatedList<E>(
+            items: items,
+            itemBuilder: itemBuilder,
+            areItemsTheSame: areItemsTheSame,
+            updateItemBuilder: updateItemBuilder,
+            removeItemBuilder: removeItemBuilder,
+            insertDuration: insertDuration,
+            removeDuration: removeDuration,
+            updateDuration: updateDuration,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SliverImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget, E> {
+  const SliverImplicitlyAnimatedList({
+    Key key,
     @required List<E> items,
     @required AnimatedItemBuilder<Widget, E> itemBuilder,
     @required ItemDiffUtil<E> areItemsTheSame,
@@ -83,13 +171,6 @@ class ImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget, E> {
     Duration insertDuration = const Duration(milliseconds: 500),
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
-    this.scrollDirection = Axis.vertical,
-    this.reverse = false,
-    this.controller,
-    this.primary,
-    this.physics,
-    this.shrinkWrap = false,
-    this.padding,
   })  : assert(itemBuilder != null),
         assert(areItemsTheSame != null),
         assert(items != null),
@@ -106,34 +187,26 @@ class ImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget, E> {
         );
 
   @override
-  ImplicitlyAnimatedListState<E> createState() => ImplicitlyAnimatedListState<E>();
+  _SliverImplicitlyAnimatedListState<E> createState() => _SliverImplicitlyAnimatedListState<E>();
 }
 
-class ImplicitlyAnimatedListState<E> extends ImplicitlyAnimatedListBaseState<Widget, ImplicitlyAnimatedList<E>, E> {
+class _SliverImplicitlyAnimatedListState<E>
+    extends ImplicitlyAnimatedListBaseState<Widget, SliverImplicitlyAnimatedList<E>, E> {
   @override
   Widget build(BuildContext context) {
-    return AnimatedList(
+    return SliverAnimatedList(
       key: listKey,
+      initialItemCount: newData.length,
       itemBuilder: (context, index, animation) {
         final item = dataSet[index];
+        final didChange = changes[item] != null;
 
-        Widget child;
-        if (widget.updateItemBuilder != null && changes[item] != null) {
-          child = buildUpdatedItemWidget(item);
+        if (widget.updateItemBuilder != null && didChange) {
+          return buildUpdatedItemWidget(item);
         } else {
-          child = itemBuilder(context, animation, item, index);
+          return itemBuilder(context, animation, item, index);
         }
-
-        return child;
       },
-      controller: widget.controller,
-      initialItemCount: newData.length,
-      padding: widget.padding,
-      physics: widget.physics,
-      primary: widget.primary,
-      reverse: widget.reverse,
-      scrollDirection: widget.scrollDirection,
-      shrinkWrap: widget.shrinkWrap,
     );
   }
 }

@@ -143,11 +143,11 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
 class ImplicitlyAnimatedReorderableListState<E>
     extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
   GlobalKey _dragKey;
-  ScrollController controller;
+  ScrollController _controller;
 
   double _listHeight = 0;
-  double get _offset => controller.offset;
-  double get _maxOffset => controller.position.maxScrollExtent;
+  double get _offset => _controller.offset;
+  double get _maxOffset => _controller.position.maxScrollExtent;
   double get _extent => _maxOffset + _listHeight;
   double get _scrollDelta => _offset - _dragStartScrollOffset;
   bool get _canScroll => _maxOffset > 0;
@@ -168,26 +168,27 @@ class ImplicitlyAnimatedReorderableListState<E>
   final ValueNotifier<double> _dragDeltaNotifier = ValueNotifier(0);
   double get _dragDelta => _dragDeltaNotifier.value;
   set _dragDelta(double value) => _dragDeltaNotifier.value = value;
-  bool get up => _dragDelta.isNegative;
-  bool motionUp = false;
+  bool get _up => _dragDelta.isNegative;
+  bool _motionUp = false;
 
   final ValueNotifier<double> _pointerDeltaNotifier = ValueNotifier(0);
   double get _pointerDelta => _pointerDeltaNotifier.value;
   set _pointerDelta(double value) => _pointerDeltaNotifier.value = value;
 
   Reorderable _dragWidget;
+
   final Map<Key, ReorderableState> _items = {};
   final Map<Key, AnimationController> _itemTranslations = {};
   final Map<Key, _Item> _itemBoxes = {};
 
-  _Item get closest => closestList.firstOrNull;
-  final List<_Item> closestList = [];
+  _Item get closest => _closestList.firstOrNull;
+  final List<_Item> _closestList = [];
 
   @override
   void initState() {
     super.initState();
     _dragKey = GlobalKey();
-    controller = widget.controller ?? ScrollController();
+    _controller = widget.controller ?? ScrollController();
   }
 
   void onDragStarted(Key key) {
@@ -211,14 +212,14 @@ class ImplicitlyAnimatedReorderableListState<E>
     if (dragKey == null || dragItem == null) return;
 
     if (isUpward != null) {
-      motionUp = isUpward;
+      _motionUp = isUpward;
     }
 
     // Allow the dragged item to be overscrolled to allow for
     // continous scrolling while in drag.
     final overscrollBound = _canScroll ? draggedItemHeight : 0;
     // Constrain the dragged item to the bounds of the list.
-    final extent = (!up ? dragItem.bottom : dragItem.top) + delta;
+    final extent = (!_up ? dragItem.bottom : dragItem.top) + delta;
     final minExtent = -(dragItem.top + overscrollBound);
     final maxExtent = _extent - overscrollBound;
     if (extent < minExtent || extent > maxExtent) {
@@ -237,20 +238,20 @@ class ImplicitlyAnimatedReorderableListState<E>
   }
 
   void _findClosestItem() {
-    closestList.clear();
+    _closestList.clear();
     for (final item in _itemBoxes.values) {
       if (item == dragItem) {
         item.distance = _pointerDelta.abs();
-        closestList.add(item);
+        _closestList.add(item);
       } else {
         final dy = item.center.dy;
-        if ((motionUp && dragTop < dy) || (!motionUp && dragBottom > dy)) {
-          item.distance = ((up ? dragTop : dragBottom) - dy).abs();
-          closestList.add(item);
+        if ((_motionUp && dragTop < dy) || (!_motionUp && dragBottom > dy)) {
+          item.distance = ((_up ? dragTop : dragBottom) - dy).abs();
+          _closestList.add(item);
         }
       }
     }
-    closestList.sort();
+    _closestList.sort();
   }
 
   void _translateNextItem() {
@@ -258,7 +259,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     final center = closest.center.dy;
 
     final key = closest.key;
-    if (up) {
+    if (_up) {
       if (dragTop < center && tr == 0.0) {
         _dispatchMove(key, draggedItemHeight);
       } else if (dragTop > center && tr != 0.0) {
@@ -347,7 +348,7 @@ class ImplicitlyAnimatedReorderableListState<E>
   void _adjustScrollPositionWhenNecessary() {
     _scrollAdjuster?.cancel();
     _scrollAdjuster = Timer.periodic(const Duration(milliseconds: 16), (_) {
-      if ((up && _offset <= 0) || (!up && _offset >= _maxOffset)) return;
+      if ((_up && _offset <= 0) || (!_up && _offset >= _maxOffset)) return;
 
       final dragBox = _dragKey?.renderBox;
       if (dragBox == null) return;
@@ -376,17 +377,17 @@ class ImplicitlyAnimatedReorderableListState<E>
         final max = atTop ? -maxSpeed : maxSpeed;
         final scrollDelta = max * delta;
 
-        controller.jumpTo(_offset + scrollDelta);
+        _controller.jumpTo(_offset + scrollDelta);
         onDragUpdated(_pointerDelta);
       }
     });
   }
 
   void onDragEnded() {
-    if (dragKey == null || closestList.isEmpty) return;
+    if (dragKey == null || _closestList.isEmpty) return;
 
     if (getTranslation(closest.key) == 0.0) {
-      _dispatchMove(closest.key, up ? draggedItemHeight : -draggedItemHeight);
+      _dispatchMove(closest.key, _up ? draggedItemHeight : -draggedItemHeight);
     }
 
     _onDragEnd = () {
@@ -424,7 +425,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
     // jumpTo() disposes of the current drag event which
     // Scrollable expects us to do.
-    controller.jumpTo(controller.offset);
+    _controller.jumpTo(_controller.offset);
 
     setState(() => inDrag = false);
   }
@@ -523,7 +524,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
             return child;
           },
-          controller: controller,
+          controller: _controller,
           initialItemCount: newData.length,
           padding: widget.padding,
           physics: !inDrag ? widget.physics : const NeverScrollableScrollPhysics(),
@@ -562,7 +563,7 @@ class ImplicitlyAnimatedReorderableListState<E>
   @override
   void dispose() {
     _scrollAdjuster?.cancel();
-    controller?.dispose();
+    _controller?.dispose();
     // _itemTranslations.forEach((key, controller) => controller?.dispose());
     super.dispose();
   }

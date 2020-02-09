@@ -159,24 +159,53 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
           ),
         ),
       ),
-      body: ImplicitlyAnimatedList<Language>(
-        items: filteredLanguages,
-        updateDuration: const Duration(milliseconds: 400),
-        areItemsTheSame: (a, b) => a == b,
-        itemBuilder: (context, animation, lang, _) {
-          return SizeFadeTranstion(
-            sizeFraction: 0.7,
-            curve: Curves.easeInOut,
-            animation: animation,
-            child: _buildItem(lang),
-          );
-        },
-        updateItemBuilder: (context, animation, lang) {
-          return FadeTransition(
-            opacity: animation,
-            child: _buildItem(lang),
-          );
-        },
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: filteredLanguages.isNotEmpty ? _buildList() : _buildNoLanguagesPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildList() {
+    return ImplicitlyAnimatedList<Language>(
+      items: filteredLanguages,
+      updateDuration: const Duration(milliseconds: 400),
+      areItemsTheSame: (a, b) => a == b,
+      itemBuilder: (context, animation, lang, _) {
+        return SizeFadeTranstion(
+          sizeFraction: 0.7,
+          curve: Curves.easeInOut,
+          animation: animation,
+          child: _buildItem(lang),
+        );
+      },
+      updateItemBuilder: (context, animation, lang) {
+        return FadeTransition(
+          opacity: animation,
+          child: _buildItem(lang),
+        );
+      },
+    );
+  }
+
+  Widget _buildNoLanguagesPlaceholder() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            Icons.translate,
+            color: Colors.grey,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No languages found!',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

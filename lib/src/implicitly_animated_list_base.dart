@@ -11,8 +11,7 @@ typedef AnimatedItemBuilder<W extends Widget, E> = W Function(
 
 typedef RemovedItemBuilder<W extends Widget, E> = W Function(BuildContext context, Animation<double> animation, E item);
 
-typedef UpdatedItemBuilder<W extends Widget, E> = W Function(
-    BuildContext context, Animation<double> animation, E item);
+typedef UpdatedItemBuilder<W extends Widget, E> = W Function(BuildContext context, Animation<double> animation, E item);
 
 abstract class ImplicitlyAnimatedListBase<W extends Widget, E> extends StatefulWidget {
   /// Called, as needed, to build list item widgets.
@@ -66,12 +65,12 @@ abstract class ImplicitlyAnimatedListBase<W extends Widget, E> extends StatefulW
 
 abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends ImplicitlyAnimatedListBase<W, E>, E>
     extends State<B> with DiffCallback<E>, TickerProviderStateMixin {
-  GlobalKey<AnimatedListState> listKey;
-  AnimatedListState get list => listKey.currentState;
+  @protected
+  GlobalKey listKey;
 
-  AnimatedItemBuilder<W, E> get itemBuilder => widget.itemBuilder;
-  RemovedItemBuilder<W, E> get removeItemBuilder => widget.removeItemBuilder;
-  UpdatedItemBuilder<W, E> get updateItemBuilder => widget.updateItemBuilder;
+  @nonVirtual
+  @protected
+  dynamic get list => listKey.currentState;
 
   DiffDelegate _delegate;
   CancelableOperation _differ;
@@ -79,12 +78,15 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   // Animation controller for custom animation that are not supported
   // by the [AnimatedList], like updates.
   AnimationController _animController;
-  Animation<double> updateAnimation;
+  Animation<double> _updateAnimation;
 
+  @protected
   List<E> dataSet;
+  @protected
   List<E> newData;
+  @protected
   List<E> oldData;
-
+  @protected
   Map<E, E> changes = {};
 
   @nonVirtual
@@ -97,6 +99,16 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @override
   List<E> get oldList => oldData;
 
+  @nonVirtual
+  @protected
+  AnimatedItemBuilder<W, E> get itemBuilder => widget.itemBuilder;
+  @nonVirtual
+  @protected
+  RemovedItemBuilder<W, E> get removeItemBuilder => widget.removeItemBuilder;
+  @nonVirtual
+  @protected
+  UpdatedItemBuilder<W, E> get updateItemBuilder => widget.updateItemBuilder;
+
   @override
   void initState() {
     super.initState();
@@ -105,7 +117,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     _delegate = DiffDelegate(this);
 
     _animController = AnimationController(vsync: this);
-    updateAnimation = TweenSequence([
+    _updateAnimation = TweenSequence([
       TweenSequenceItem(
         tween: Tween(begin: 1.0, end: 0.0),
         weight: 0.5,
@@ -115,8 +127,6 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
         weight: 0.5,
       ),
     ]).animate(_animController);
-
-    // _scrollController = widget.controller ?? ScrollController();
 
     didUpdateWidget(widget);
   }
@@ -175,6 +185,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @override
   void onRemoved(int index) {
     final item = dataSet.removeAt(index);
+
     list.removeItem(index, (context, animation) {
       if (removeItemBuilder != null) {
         return removeItemBuilder(context, animation, item);
@@ -215,14 +226,14 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     final oldItem = changes[newItem];
 
     return AnimatedBuilder(
-      animation: updateAnimation,
+      animation: _updateAnimation,
       builder: (context, _) {
         final value = _animController.value;
         final item = value < 0.5 ? oldItem : newItem;
 
         return updateItemBuilder(
           context,
-          updateAnimation,
+          _updateAnimation,
           item,
         );
       },
