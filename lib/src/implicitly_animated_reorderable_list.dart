@@ -340,13 +340,7 @@ class ImplicitlyAnimatedReorderableListState<E>
       final dragBox = _dragKey?.renderBox;
       if (dragBox == null) return;
 
-      final dragItemTop = dragBox
-          .localToGlobal(
-            Offset.zero,
-            ancestor: context.renderBox,
-          )
-          .dy;
-
+      final dragItemTop = dragBox.localToGlobal(Offset.zero, ancestor: context.renderBox).dy;
       final dragItemBottom = dragItemTop + draggedItemHeight;
 
       double delta;
