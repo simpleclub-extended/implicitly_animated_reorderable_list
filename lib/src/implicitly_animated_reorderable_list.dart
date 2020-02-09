@@ -130,8 +130,6 @@ class ImplicitlyAnimatedReorderableListState<E>
   GlobalKey _dragKey;
   ScrollController _controller;
 
-  bool get isNested => false && widget.controller != null;
-
   double _listHeight = 0;
   double get _offset => _controller.offset;
   double get _maxOffset => _controller.position.maxScrollExtent;
@@ -509,14 +507,14 @@ class ImplicitlyAnimatedReorderableListState<E>
 
             return child;
           },
-          controller: !isNested ? _controller : null,
+          controller: _controller,
           initialItemCount: newData.length,
           padding: widget.padding,
-          physics: inDrag || isNested ? const NeverScrollableScrollPhysics() : widget.physics,
+          physics: inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
           primary: widget.primary,
           reverse: widget.reverse,
           scrollDirection: Axis.vertical,
-          shrinkWrap: widget.shrinkWrap || isNested,
+          shrinkWrap: widget.shrinkWrap,
         ),
         if (_dragWidget != null) _buildDraggedItem()
       ],
