@@ -20,31 +20,32 @@ class Handle extends StatefulWidget {
 
 class _HandleState extends State<Handle> {
   bool _inDrag = false;
-  Offset _dragStart;
-  Offset _dragEnd;
+  bool get _isVertical => _list?.isVertical ?? true;
+
+  double _dragStart;
+  double _dragEnd;
   Offset _pointer;
   Handler _handler;
 
   ImplicitlyAnimatedReorderableListState _list;
   ReorderableState _item;
 
-  double get delta => (_dragEnd?.dy ?? 0) - (_dragStart?.dy ?? 0);
+  double get delta => (_dragEnd ?? 0) - (_dragStart ?? 0);
 
   void _onDragStarted() {
     if (_inDrag) return;
 
     _inDrag = true;
-    _dragStart = Offset(_pointer.dx, _pointer.dy);
+    _dragStart = _isVertical ? _pointer.dy : _pointer.dx;
 
-    HapticFeedback.heavyImpact();
+    HapticFeedback.mediumImpact();
 
     _list?.onDragStarted(_item?.key);
     _item?.setState(() {});
   }
 
   void _onDragUpdated(bool upward) {
-    _dragEnd = Offset(_pointer.dx, _pointer.dy);
-
+    _dragEnd = _isVertical ? _pointer.dy : _pointer.dx;
     _list?.onDragUpdated(delta, isUpward: upward);
   }
 
@@ -54,14 +55,14 @@ class _HandleState extends State<Handle> {
     _handler?.cancel();
     _list?.onDragEnded();
 
-    HapticFeedback.lightImpact();
+    HapticFeedback.mediumImpact();
   }
 
   @override
   Widget build(BuildContext context) {
-    _list = ImplicitlyAnimatedReorderableListState.of(context);
+    _list = ImplicitlyAnimatedReorderableList.of(context);
     assert(_list != null, 'No ImplicitlyAnimatedListView was found in the hirachy!');
-    _item = ReorderableState.of(context);
+    _item = Reorderable.of(context);
     assert(_item != null, 'No ReorderableItem was found in the hirachy!');
 
     return Listener(
@@ -78,24 +79,19 @@ class _HandleState extends State<Handle> {
       },
       onPointerMove: (event) {
         _pointer = event.localPosition;
+        final delta = _isVertical ? event.delta.dy : event.delta.dx;
 
-        if (_inDrag) {
-          _onDragUpdated(event.delta.dy.isNegative);
-        }
+        if (_inDrag) _onDragUpdated(delta.isNegative);
       },
       onPointerUp: (event) {
         _handler?.cancel();
 
-        if (_inDrag) {
-          _onDragEnded();
-        }
+        if (_inDrag) _onDragEnded();
       },
       onPointerCancel: (event) {
         _handler?.cancel();
 
-        if (_inDrag) {
-          _onDragEnded();
-        }
+        if (_inDrag) _onDragEnded();
       },
       child: widget.child,
     );

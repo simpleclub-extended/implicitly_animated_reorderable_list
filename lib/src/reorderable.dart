@@ -24,6 +24,10 @@ class Reorderable extends StatefulWidget {
 
   @override
   ReorderableState createState() => ReorderableState();
+
+  static ReorderableState of(BuildContext context) {
+    return context.findAncestorStateOfType<ReorderableState>();
+  }
 }
 
 class ReorderableState extends State<Reorderable> with SingleTickerProviderStateMixin {
@@ -68,7 +72,7 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
   }
 
   void _registerItem() {
-    _list ??= ImplicitlyAnimatedReorderableListState.of(context);
+    _list ??= ImplicitlyAnimatedReorderableList.of(context);
     assert(_list != null, 'No ImplicitlyAnimatedListView was found in the hirachy!');
 
     _list?.registerItem(this);
@@ -100,12 +104,19 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     }
 
     if (_translation != null) {
+      final isVertical = _list.isVertical;
+
       return AnimatedBuilder(
         animation: _translation,
         child: child,
         builder: (context, child) {
+          final offset = _translation.value;
+
           return Transform.translate(
-            offset: Offset(0, _translation.value),
+            offset: Offset(
+              isVertical ? 0 : offset,
+              isVertical ? offset : 0,
+            ),
             child: child,
           );
         },
@@ -113,10 +124,6 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     }
 
     return child;
-  }
-
-  static ReorderableState of(BuildContext context) {
-    return context.findAncestorStateOfType<ReorderableState>();
   }
 
   @override
