@@ -116,13 +116,14 @@ class _LanguagePageState extends State<LanguagePage> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         scrollDirection: Axis.horizontal,
         areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
+        onReorderStarted: (item, index) => setState(() => inReorder = true),
         onReorderFinished: (item, from, to, newItems) => onReorderFinished(newItems),
         itemBuilder: (context, itemAnimation, item, index) {
           return Reorderable(
             key: ValueKey(item.toString()),
             builder: (context, dragAnimation, inDrag) {
               final t = dragAnimation.value;
-              final box = buildBox(item, t);
+              final box = _buildBox(item, t);
 
               if (t > 0) return box;
 
@@ -224,7 +225,7 @@ class _LanguagePageState extends State<LanguagePage> {
     );
   }
 
-  Widget buildBox(Language item, double t) {
+  Widget _buildBox(Language item, double t) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 

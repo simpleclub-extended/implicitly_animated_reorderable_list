@@ -4,18 +4,17 @@ import 'src.dart';
 
 typedef ReorderableBuilder = Widget Function(BuildContext context, Animation<double> animation, bool inDrag);
 
-/// The parent widget of every item in a [ImplicitlyAnimatedReorderableList].
+/// The parent widget of every item in an [ImplicitlyAnimatedReorderableList].
 class Reorderable extends StatefulWidget {
-  /// Called, as needed, to build list item widgets.
-  ///
-  /// List items are only built when they're scrolled into view.
+  /// Called, as needed, to build the child this Reorderable.
   ///
   /// The [ReorderableBuilder] `animation` parameter supplies you with an animation you can use to
   /// transition between the normal and the dragged state of the item. The `inDrag` parameter
-  /// indicates whether this item is currently being dragged and you can use it to run implicit
-  /// animations based on it.
+  /// indicates whether this item is currently being dragged/reordered.
   final ReorderableBuilder builder;
   const Reorderable({
+    /// A unique key that identifies this Reorderable. The value of the key should
+    /// not change throughout the lifecycle of the item.
     @required Key key,
     @required this.builder,
   })  : assert(key != null),

@@ -145,9 +145,9 @@ class ImplicitlyAnimatedReorderableListState<E>
   bool get isVertical => widget.scrollDirection != Axis.horizontal;
 
   double _listSize = 0;
-  double get _scrollOffset => _controller.offset;
+  double get scrollOffset => _controller.offset;
   double get _maxScrollOffset => _controller.position.maxScrollExtent;
-  double get _scrollDelta => _scrollOffset - _dragStartScrollOffset;
+  double get _scrollDelta => scrollOffset - _dragStartScrollOffset;
   bool get _canScroll => _maxScrollOffset > 0;
 
   bool _motionUp = false;
@@ -200,7 +200,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     if (dragIndex != null) {
       final offset = _itemOffset(key);
       _dragStartOffset = isVertical ? offset.dy : offset.dx;
-      _dragStartScrollOffset = _scrollOffset;
+      _dragStartScrollOffset = scrollOffset;
       _findClosestItem();
 
       setState(() => _inDrag = true);
@@ -351,7 +351,7 @@ class ImplicitlyAnimatedReorderableListState<E>
   void _adjustScrollPositionWhenNecessary() {
     _scrollAdjuster?.cancel();
     _scrollAdjuster = Timer.periodic(const Duration(milliseconds: 16), (_) {
-      if ((_up && _scrollOffset <= 0) || (!_up && _scrollOffset >= _maxScrollOffset)) return;
+      if ((_up && scrollOffset <= 0) || (!_up && scrollOffset >= _maxScrollOffset)) return;
 
       final dragBox = _dragKey?.renderBox;
       if (dragBox == null) return;
@@ -375,7 +375,7 @@ class ImplicitlyAnimatedReorderableListState<E>
         final max = atLowerBound ? -maxSpeed : maxSpeed;
         final scrollDelta = max * delta;
 
-        _controller.jumpTo(_scrollOffset + scrollDelta);
+        _controller.jumpTo(scrollOffset + scrollDelta);
         onDragUpdated(_pointerDelta);
       }
     });
@@ -473,8 +473,8 @@ class ImplicitlyAnimatedReorderableListState<E>
   void _measureChild(Key key, [int index]) {
     final box = _items[key].context?.renderBox;
     final offset = _itemOffset(key)?.translate(
-      isVertical ? 0 : _scrollOffset,
-      isVertical ? _scrollOffset : 0,
+      isVertical ? 0 : scrollOffset,
+      isVertical ? scrollOffset : 0,
     );
 
     if (box != null && offset != null) {
