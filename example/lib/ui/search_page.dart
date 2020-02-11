@@ -109,61 +109,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
     final padding = MediaQuery.of(context).viewPadding.top;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(56 + padding),
-        child: Box(
-          height: 56 + padding,
-          width: double.infinity,
-          color: theme.accentColor,
-          elevation: 4,
-          shadowColor: Colors.black12,
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: padding),
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    BackButton(
-                      color: Colors.white,
-                    ),
-                    Expanded(
-                      child: TextField(
-                        autofocus: true,
-                        controller: _controller,
-                        textInputAction: TextInputAction.search,
-                        style: textTheme.body2.copyWith(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                          hintText: 'Search for a language',
-                          hintStyle: textTheme.body2.copyWith(
-                            color: Colors.grey.shade200,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    AnimatedOpacity(
-                      duration: const Duration(milliseconds: 350),
-                      opacity: text.isEmpty ? 0.0 : 1.0,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.clear,
-                          color: Colors.white,
-                        ),
-                        onPressed: () => _controller.text = '',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      appBar: _buildAppBar(padding, theme, textTheme),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         child: filteredLanguages.isNotEmpty ? _buildList() : _buildNoLanguagesPlaceholder(),
@@ -190,6 +136,64 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
           child: _buildItem(lang),
         );
       },
+    );
+  }
+
+  Widget _buildAppBar(double padding, ThemeData theme, TextTheme textTheme) {
+    return PreferredSize(
+      preferredSize: Size.fromHeight(56 + padding),
+      child: Box(
+        height: 56 + padding,
+        width: double.infinity,
+        color: theme.accentColor,
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.2),
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: padding),
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  BackButton(
+                    color: Colors.white,
+                  ),
+                  Expanded(
+                    child: TextField(
+                      autofocus: true,
+                      controller: _controller,
+                      textInputAction: TextInputAction.search,
+                      style: textTheme.body2.copyWith(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        hintText: 'Search for a language',
+                        hintStyle: textTheme.body2.copyWith(
+                          color: Colors.grey.shade200,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 350),
+                    opacity: text.isEmpty ? 0.0 : 1.0,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.clear,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => _controller.text = '',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

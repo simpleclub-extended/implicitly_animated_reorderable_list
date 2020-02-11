@@ -137,3 +137,7 @@ Also note that computing the diff between two very large lists my take significa
 ### Acknowledgements
 
 The diff algorithm that `ImplicitlyAnimatedList` uses was written by [Dawid Bota](https://gitlab.com/otsoaUnLoco) at [GitLab](https://gitlab.com/otsoaUnLoco/animated-stream-list).
+
+### Roadmap
+
+You can take a look at the [Roadmap](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/roadmap.md) to see which featues I am working on or plan to implement in future versions.
