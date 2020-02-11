@@ -117,6 +117,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     _delegate = DiffDelegate(this);
 
     _animController = AnimationController(vsync: this);
+
     _updateAnimation = TweenSequence([
       TweenSequenceItem(
         tween: Tween(begin: 1.0, end: 0.0),
@@ -126,7 +127,12 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
         tween: Tween(begin: 0.0, end: 1.0),
         weight: 0.5,
       ),
-    ]).animate(_animController);
+    ]).animate(_animController)
+      ..addListener(() {
+        if (_animController.isAnimating) {
+          changes.keys.forEach(buildUpdatedItemWidget);
+        }
+      });
 
     didUpdateWidget(widget);
   }
@@ -223,20 +229,21 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @nonVirtual
   @protected
   Widget buildUpdatedItemWidget(E newItem) {
+    final value = _animController.value;
+
     final oldItem = changes[newItem];
+    final item = value < 0.5 ? oldItem : newItem;
 
-    return AnimatedBuilder(
-      animation: _updateAnimation,
-      builder: (context, _) {
-        final value = _animController.value;
-        final item = value < 0.5 ? oldItem : newItem;
-
-        return updateItemBuilder(
-          context,
-          _updateAnimation,
-          item,
-        );
-      },
+    return updateItemBuilder(
+      context,
+      _updateAnimation,
+      item,
     );
+  }
+
+  @override
+  void dispose() { 
+    _animController.dispose();
+    super.dispose();
   }
 }

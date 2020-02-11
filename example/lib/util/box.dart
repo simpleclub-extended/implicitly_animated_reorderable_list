@@ -120,7 +120,7 @@ class Box extends StatelessWidget {
 
     final boxDecoration = BoxDecoration(
       color: color,
-      borderRadius: circle ? null : br,
+      borderRadius: circle || br == BorderRadius.zero ? null : br,
       shape: boxShape,
       boxShadow: boxShadow,
       border: border,

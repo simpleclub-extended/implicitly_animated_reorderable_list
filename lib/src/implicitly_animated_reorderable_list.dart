@@ -16,6 +16,9 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// Defaults to false.
   final bool reverse;
 
+  /// The axis along which the scroll view scrolls.
+  ///
+  /// Defaults to [Axis.vertical].
   final Axis scrollDirection;
 
   /// An object that can be used to control the position to which this scroll
@@ -38,7 +41,7 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// On iOS, this identifies the scroll view that will scroll to top in
   /// response to a tap in the status bar.
   ///
-  /// Defaults to true when scrollDirection is [Axis.vertical] and
+  /// Defaults to true when [scrollDirection] is [Axis.vertical] and
   /// [controller] is null.
   final bool primary;
 
@@ -50,12 +53,12 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// Defaults to matching platform conventions.
   final ScrollPhysics physics;
 
-  /// Whether the extent of the scroll view in the scrollDirection should be
+  /// Whether the extent of the scroll view in the [scrollDirection] should be
   /// determined by the contents being viewed.
   ///
   /// If the scroll view does not shrink wrap, then the scroll view will expand
-  /// to the maximum allowed size in the scrollDirection. If the scroll view
-  /// has unbounded constraints in the scrollDirection, then [shrinkWrap] must
+  /// to the maximum allowed size in the [scrollDirection]. If the scroll view
+  /// has unbounded constraints in the [scrollDirection], then [shrinkWrap] must
   /// be true.
   ///
   /// Shrink wrapping the content of the scroll view is significantly more
@@ -69,7 +72,13 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// The amount of space by which to inset the children.
   final EdgeInsetsGeometry padding;
 
+  /// The duration of the animation of the [Reorderable] between dragged
+  /// and normal state.
   final Duration dragDuration;
+
+  /// Called in response to when an item changed from normal to dragged
+  /// state and may be reordered.
+  final ReorderStartedCallback<E> onReorderStarted;
 
   /// Called in response to when the dragged item has been released
   /// and animated to its final destination. Here you should update
@@ -78,11 +87,9 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// The `item` parameter of the callback is the item that has been reordered
   /// `from` index `to` index. The `data` parameter represents the new data with
   /// the item already being correctly reordered.
+  ///
+  /// This parameter should not be null.
   final ReorderFinishedCallback<E> onReorderFinished;
-
-  /// Called when an item changed from normal to dragged state and
-  /// may be reordered.
-  final ReorderStartedCallback<E> onReorderStarted;
 
   const ImplicitlyAnimatedReorderableList({
     Key key,
@@ -95,8 +102,8 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
     @required this.onReorderFinished,
-    this.dragDuration = const Duration(milliseconds: 300),
     this.onReorderStarted,
+    this.dragDuration = const Duration(milliseconds: 300),
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -224,7 +231,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     // Constrain the dragged item to the bounds of the list.
     final currentDelta = (_up ? dragItem.start : dragItem.end) + delta;
     final minDelta = -(dragItem.start + overscrollBound);
-    final maxDelta = (_maxScrollOffset + _listSize) - overscrollBound;
+    final maxDelta = (_maxScrollOffset + _listSize) + overscrollBound;
     if (currentDelta < minDelta || currentDelta > maxDelta) {
       return;
     }
@@ -488,6 +495,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     _onRebuild();
 
     return Stack(
+      fit: StackFit.passthrough,
       children: <Widget>[
         AnimatedList(
           key: listKey,

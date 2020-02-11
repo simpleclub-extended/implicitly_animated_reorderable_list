@@ -68,6 +68,11 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     return Box(
+      border: Border(
+        bottom: BorderSide(
+          color: Colors.grey.shade200,
+        ),
+      ),
       color: Colors.white,
       onTap: () => Navigator.pop(context, lang),
       child: ListTile(
@@ -111,7 +116,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
           width: double.infinity,
           color: theme.accentColor,
           elevation: 4,
-          shadowColor: Colors.black26,
+          shadowColor: Colors.black12,
           child: Column(
             children: <Widget>[
               SizedBox(height: padding),

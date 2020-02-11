@@ -20,11 +20,15 @@ class LanguagePage extends StatefulWidget {
 
 class _LanguagePageState extends State<LanguagePage> {
   static const double _horizontalHeight = 96;
+  static const List<String> options = [
+    'Shuffle',
+  ];
 
   final List<Language> selectedLanguages = [
     english,
     german,
     spanish,
+    french,
   ];
 
   bool inReorder = false;
@@ -48,6 +52,9 @@ class _LanguagePageState extends State<LanguagePage> {
       appBar: AppBar(
         title: Text('Languages Demo'),
         backgroundColor: theme.accentColor,
+        actions: <Widget>[
+          _buildPopupMenuButton(textTheme),
+        ],
       ),
       body: ListView(
         // Prevent the ListView from scrolling when an item is
@@ -55,9 +62,11 @@ class _LanguagePageState extends State<LanguagePage> {
         physics: inReorder ? const NeverScrollableScrollPhysics() : null,
         padding: const EdgeInsets.only(bottom: 24),
         children: <Widget>[
+          _buildHeadline('Vertically'),
+          Divider(height: 0),
           _buildVerticalLanguageList(),
           _buildFooter(context, textTheme),
-          _buildListSeperator(),
+          _buildHeadline('Horizontally'),
           _buildHorizontalLanguageList(),
         ],
       ),
@@ -80,7 +89,7 @@ class _LanguagePageState extends State<LanguagePage> {
           key: ValueKey(lang),
           builder: (context, dragAnimation, inDrag) {
             final t = dragAnimation.value;
-            final tile = _buildTile(t, lang, index);
+            final tile = _buildTile(t, lang);
 
             // If the item is in drag, only return the tile as the
             // SizeFadeTransition would clip the shadow.
@@ -97,6 +106,23 @@ class _LanguagePageState extends State<LanguagePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   tile,
+                  Divider(height: 0),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      updateItemBuilder: (context, itemAnimation, lang) {
+        return Reorderable(
+          key: ValueKey(lang),
+          builder: (context, dragAnimation, inDrag) {
+            return FadeTransition(
+              opacity: itemAnimation,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _buildTile(0.0, lang),
                   Divider(height: 0),
                 ],
               ),
@@ -137,11 +163,22 @@ class _LanguagePageState extends State<LanguagePage> {
             },
           );
         },
+        updateItemBuilder: (context, itemAnimation, item) {
+          return Reorderable(
+            key: ValueKey(item.toString()),
+            builder: (context, dragAnimation, inDrag) {
+              return FadeTransition(
+                opacity: itemAnimation,
+                child: _buildBox(item, 0),
+              );
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTile(double t, Language lang, int index) {
+  Widget _buildTile(double t, Language lang) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -169,7 +206,7 @@ class _LanguagePageState extends State<LanguagePage> {
                     SizedBox(height: 4),
                     Text(
                       'Delete',
-                      style: textTheme.body2.copyWith(
+                      style: textTheme.bodyText1.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -190,13 +227,13 @@ class _LanguagePageState extends State<LanguagePage> {
         child: ListTile(
           title: Text(
             lang.nativeName,
-            style: textTheme.bodyText2.copyWith(
+            style: textTheme.bodyText1.copyWith(
               fontSize: 16,
             ),
           ),
           subtitle: Text(
             lang.englishName,
-            style: textTheme.bodyText1.copyWith(
+            style: textTheme.bodyText2.copyWith(
               fontSize: 15,
             ),
           ),
@@ -205,8 +242,8 @@ class _LanguagePageState extends State<LanguagePage> {
             height: 36,
             child: Center(
               child: Text(
-                '${index + 1}',
-                style: textTheme.bodyText2.copyWith(
+                '${selectedLanguages.indexOf(lang) + 1}',
+                style: textTheme.bodyText1.copyWith(
                   color: theme.accentColor,
                   fontSize: 16,
                 ),
@@ -216,7 +253,7 @@ class _LanguagePageState extends State<LanguagePage> {
           trailing: Handle(
             delay: const Duration(milliseconds: 100),
             child: Icon(
-              Icons.list,
+              Icons.drag_handle,
               color: Colors.grey,
             ),
           ),
@@ -251,12 +288,12 @@ class _LanguagePageState extends State<LanguagePage> {
             children: <Widget>[
               Text(
                 item.nativeName,
-                style: textTheme.bodyText2,
+                style: textTheme.bodyText1,
               ),
               const SizedBox(height: 8),
               Text(
                 item.englishName,
-                style: textTheme.bodyText1,
+                style: textTheme.bodyText2,
               ),
             ],
           ),
@@ -309,7 +346,7 @@ class _LanguagePageState extends State<LanguagePage> {
     );
   }
 
-  Widget _buildListSeperator() {
+  Widget _buildHeadline(String headline) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -327,7 +364,7 @@ class _LanguagePageState extends State<LanguagePage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
-            'Horizontally',
+            headline,
             style: textTheme.bodyText2.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -336,6 +373,31 @@ class _LanguagePageState extends State<LanguagePage> {
         buildDivider(),
         const SizedBox(height: 16),
       ],
+    );
+  }
+
+  Widget _buildPopupMenuButton(TextTheme textTheme) {
+    return PopupMenuButton<String>(
+      padding: const EdgeInsets.all(0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      onSelected: (value) {
+        switch (value) {
+          case 'Shuffle':
+            setState(selectedLanguages.shuffle);
+            break;
+        }
+      },
+      itemBuilder: (context) => options.map((option) {
+        return PopupMenuItem(
+          value: option,
+          child: Text(
+            option,
+            style: textTheme.bodyText2,
+          ),
+        );
+      }).toList(),
     );
   }
 }
