@@ -152,7 +152,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
 
       await _differ?.cancel();
       _differ = CancelableOperation.fromFuture(
-        DiffUtil.calculateDiff<E>(this),
+        DiffUtil.withCallback<E>(this),
       );
 
       final diffs = await _differ.value;

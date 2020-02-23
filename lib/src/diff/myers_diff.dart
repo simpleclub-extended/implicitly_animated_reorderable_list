@@ -20,14 +20,22 @@ class DiffUtil<E> {
   // ignore: constant_identifier_names
   static const int ISOLATE_THRESHOLD = 1500;
 
-  static Future<List<Diff>> calculateDiff<E>(DiffCallback<E> cb) {
-    eq = cb.areItemsTheSame;
-    cq = cb.areItemsTheSame;
+  static Future<List<Diff>> withCallback<E>(DiffCallback<E> cb) {
+    return diff<E>(cb.newList, cb.oldList, areItemsTheSame: cb.areItemsTheSame);
+  }
 
-    final args = _DiffArguments<E>(cb.oldList, cb.newList);
+  static Future<List<Diff>> diff<E>(
+    List<E> newList,
+    List<E> oldList, {
+    @required ItemDiffUtil<E> areItemsTheSame,
+  }) {
+    eq = areItemsTheSame;
+    cq = areItemsTheSame;
+
+    final args = _DiffArguments<E>(oldList, newList);
 
     // Only spawn a new isolate for long lists
-    if ((args.newList.length * args.oldList.length) > ISOLATE_THRESHOLD) {
+    if ((newList.length * oldList.length) > ISOLATE_THRESHOLD) {
       return compute(_myersDiff, args);
     }
 
