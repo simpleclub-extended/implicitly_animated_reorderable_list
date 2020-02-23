@@ -6,7 +6,7 @@ import '../animations/animations.dart';
 import '../util/util.dart';
 
 class LanguageSearchPage extends StatefulWidget {
-  LanguageSearchPage({Key key}) : super(key: key);
+  const LanguageSearchPage({Key key}) : super(key: key);
 
   @override
   _LanguageSearchPageState createState() => _LanguageSearchPageState();

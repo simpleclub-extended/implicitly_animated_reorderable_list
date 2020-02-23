@@ -14,12 +14,12 @@ class Item {
   int get hashCode => id.hashCode;
 }
 
-void main() async {
+Future<void> main() async {
   final List<Item> list = List.generate(1000, (index) => Item(index, index));
   final List<Item> newList = List.from(list)..shuffle();
 
   final start = DateTime.now();
-  final result = await DiffUtil.diff<Item>(
+  final result = await MyersDiff.diff<Item>(
     newList,
     list,
     areItemsTheSame: (a, b) => a.id == b.id,

@@ -50,6 +50,13 @@ abstract class ImplicitlyAnimatedListBase<W extends Widget, E> extends StatefulW
 
   /// The duration of the animation when an item changed in the list.
   final Duration updateDuration;
+
+  /// Whether to spawn a new isolate on which to calculate the diff on.
+  ///
+  /// Usually you wont have to specify this value as the MyersDiff implementation will
+  /// use its own metrics to decide, whether a new isolate has to be spawned or not for
+  /// optimal performance.
+  final bool spawnIsolate;
   const ImplicitlyAnimatedListBase({
     Key key,
     @required this.items,
@@ -60,6 +67,7 @@ abstract class ImplicitlyAnimatedListBase<W extends Widget, E> extends StatefulW
     @required this.insertDuration,
     @required this.removeDuration,
     @required this.updateDuration,
+    @required this.spawnIsolate,
   }) : super(key: key);
 }
 
@@ -146,13 +154,13 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     _calcDiffs();
   }
 
-  void _calcDiffs() async {
+  Future<void> _calcDiffs() async {
     if (!listEquals(oldData, newData)) {
       changes.clear();
 
       await _differ?.cancel();
       _differ = CancelableOperation.fromFuture(
-        DiffUtil.withCallback<E>(this),
+        MyersDiff.withCallback<E>(this, spawnIsolate: widget.spawnIsolate),
       );
 
       final diffs = await _differ.value;

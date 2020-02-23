@@ -123,7 +123,7 @@ class _LanguagePageState extends State<LanguagePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   _buildTile(0.0, lang),
-                  Divider(height: 0),
+                  const Divider(height: 0),
                 ],
               ),
             );

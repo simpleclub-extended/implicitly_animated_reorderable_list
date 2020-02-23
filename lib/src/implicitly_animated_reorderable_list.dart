@@ -101,6 +101,7 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     Duration insertDuration = const Duration(milliseconds: 500),
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
+    bool spawnIsolate,
     @required this.onReorderFinished,
     this.onReorderStarted,
     this.dragDuration = const Duration(milliseconds: 300),
@@ -129,6 +130,7 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
           insertDuration: insertDuration,
           removeDuration: removeDuration,
           updateDuration: updateDuration,
+          spawnIsolate: spawnIsolate,
         );
 
   @override

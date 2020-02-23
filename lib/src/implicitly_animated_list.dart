@@ -40,6 +40,13 @@ class ImplicitlyAnimatedList<E> extends StatelessWidget {
   /// The duration of the animation when an item changed in the list.
   final Duration updateDuration;
 
+  /// Whether to spawn a new isolate on which to calculate the diff on.
+  ///
+  /// Usually you wont have to specify this value as the MyersDiff implementation will
+  /// use its own metrics to decide, whether a new isolate has to be spawned or not for
+  /// optimal performance.
+  final bool spawnIsolate;
+
   /// The axis along which the scroll view scrolls.
   ///
   /// Defaults to [Axis.vertical].
@@ -120,6 +127,7 @@ class ImplicitlyAnimatedList<E> extends StatelessWidget {
     this.insertDuration = const Duration(milliseconds: 500),
     this.removeDuration = const Duration(milliseconds: 500),
     this.updateDuration = const Duration(milliseconds: 500),
+    this.spawnIsolate,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -153,6 +161,7 @@ class ImplicitlyAnimatedList<E> extends StatelessWidget {
             insertDuration: insertDuration,
             removeDuration: removeDuration,
             updateDuration: updateDuration,
+            spawnIsolate: spawnIsolate,
           ),
         ),
       ],
@@ -171,6 +180,7 @@ class SliverImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget,
     Duration insertDuration = const Duration(milliseconds: 500),
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
+    bool spawnIsolate,
   })  : assert(itemBuilder != null),
         assert(areItemsTheSame != null),
         assert(items != null),
@@ -184,6 +194,7 @@ class SliverImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget,
           insertDuration: insertDuration,
           removeDuration: removeDuration,
           updateDuration: updateDuration,
+          spawnIsolate: spawnIsolate,
         );
 
   @override

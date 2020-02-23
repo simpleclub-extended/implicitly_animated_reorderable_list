@@ -12,29 +12,39 @@ class _DiffArguments<E> {
   _DiffArguments(this.oldList, this.newList);
 }
 
-class DiffUtil<E> {
+class MyersDiff<E> {
   static ItemDiffUtil eq;
   static ItemDiffUtil cq;
 
   static const int ISOLATE_THRESHOLD = 1500;
 
-  static Future<List<Diff>> withCallback<E>(DiffCallback<E> cb) {
-    return diff<E>(cb.newList, cb.oldList, areItemsTheSame: cb.areItemsTheSame);
+  static Future<List<Diff>> withCallback<E>(
+    DiffCallback<E> cb, {
+    bool spawnIsolate,
+  }) {
+    return diff<E>(
+      cb.newList,
+      cb.oldList,
+      areItemsTheSame: cb.areItemsTheSame,
+      spawnIsolate: spawnIsolate,
+    );
   }
 
   static Future<List<Diff>> diff<E>(
     List<E> newList,
     List<E> oldList, {
-    @required ItemDiffUtil<E> areItemsTheSame,
+    ItemDiffUtil<E> areItemsTheSame,
+    bool spawnIsolate,
   }) {
-    eq = areItemsTheSame;
-    cq = areItemsTheSame;
+    eq = areItemsTheSame ?? (a, b) => a == b;
+    cq = areItemsTheSame ?? (a, b) => a == b;
 
     final args = _DiffArguments<E>(oldList, newList);
 
     // We can significantly improve the performance by not spawning a new
     // isolate for shorter lists.
-    if ((newList.length * oldList.length) > ISOLATE_THRESHOLD) {
+    spawnIsolate ??= (newList.length * oldList.length) > ISOLATE_THRESHOLD;
+    if (spawnIsolate) {
       return compute(_myersDiff, args);
     }
 
@@ -62,7 +72,7 @@ List<Diff> _myersDiff<E>(_DiffArguments<E> args) {
     return [Deletion(0, oldSize)];
   }
 
-  final equals = DiffUtil.eq != null ? DiffUtil.eq : (a, b) => a == b;
+  final equals = MyersDiff.eq != null ? MyersDiff.eq : (a, b) => a == b;
   final path = _buildPath(oldList, newList, equals);
   final diffs = _buildPatch(path, oldList, newList)..sort();
   return diffs.reversed.toList(growable: true);
