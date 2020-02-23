@@ -12,12 +12,10 @@ class _DiffArguments<E> {
   _DiffArguments(this.oldList, this.newList);
 }
 
-// ignore: avoid_classes_with_only_static_members
 class DiffUtil<E> {
   static ItemDiffUtil eq;
   static ItemDiffUtil cq;
 
-  // ignore: constant_identifier_names
   static const int ISOLATE_THRESHOLD = 1500;
 
   static Future<List<Diff>> withCallback<E>(DiffCallback<E> cb) {
@@ -34,7 +32,8 @@ class DiffUtil<E> {
 
     final args = _DiffArguments<E>(oldList, newList);
 
-    // Only spawn a new isolate for long lists
+    // We can significantly improve the performance by not spawning a new
+    // isolate for shorter lists.
     if ((newList.length * oldList.length) > ISOLATE_THRESHOLD) {
       return compute(_myersDiff, args);
     }
