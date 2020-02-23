@@ -13,7 +13,7 @@ Click [here](https://github.com/BendixMa/implicitly_animated_reorderable_list/bl
 Add it to your `pubspec.yaml` file:
 ```yaml
 dependencies:
-  implicitly_animated_reorderable_list: ^0.1.5
+  implicitly_animated_reorderable_list: ^0.1.6
 ```
 Install packages from the command line
 ```
