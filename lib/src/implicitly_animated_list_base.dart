@@ -77,8 +77,10 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
 
   // Animation controller for custom animation that are not supported
   // by the [AnimatedList], like updates.
-  AnimationController _animController;
+  AnimationController _updateAnimController;
+  AnimationController get updateAnimController => _updateAnimController;
   Animation<double> _updateAnimation;
+  Animation<double> get updateAnimation => _updateAnimation;
 
   @protected
   List<E> dataSet;
@@ -116,7 +118,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     dataSet = List<E>.from(widget.items);
     _delegate = DiffDelegate(this);
 
-    _animController = AnimationController(vsync: this);
+    _updateAnimController = AnimationController(vsync: this);
 
     _updateAnimation = TweenSequence([
       TweenSequenceItem(
@@ -127,12 +129,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
         tween: Tween(begin: 0.0, end: 1.0),
         weight: 0.5,
       ),
-    ]).animate(_animController)
-      ..addListener(() {
-        if (_animController.isAnimating) {
-          changes.keys.forEach(buildUpdatedItemWidget);
-        }
-      });
+    ]).animate(_updateAnimController);
 
     didUpdateWidget(widget);
   }
@@ -144,7 +141,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     newData = List<E>.from(widget.items);
     oldData = List<E>.from(dataSet);
 
-    _animController.duration = widget.updateDuration;
+    _updateAnimController.duration = widget.updateDuration;
 
     _calcDiffs();
   }
@@ -162,7 +159,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
       if (diffs == null) return;
       _delegate.applyDiffs(diffs);
 
-      _animController
+      _updateAnimController
         ..reset()
         ..forward();
     }
@@ -226,24 +223,24 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     return itemBuilder(context, animation, item, index);
   }
 
-  @nonVirtual
   @protected
   Widget buildUpdatedItemWidget(E newItem) {
-    final value = _animController.value;
-
     final oldItem = changes[newItem];
-    final item = value < 0.5 ? oldItem : newItem;
 
-    return updateItemBuilder(
-      context,
-      _updateAnimation,
-      item,
+    return AnimatedBuilder(
+      animation: _updateAnimation,
+      builder: (context, _) {
+        final value = _updateAnimController.value;
+        final item = value < 0.5 ? oldItem : newItem;
+
+        return updateItemBuilder(context, _updateAnimation, item);
+      },
     );
   }
 
   @override
-  void dispose() { 
-    _animController.dispose();
+  void dispose() {
+    _updateAnimController.dispose();
     super.dispose();
   }
 }

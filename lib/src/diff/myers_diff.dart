@@ -2,27 +2,37 @@ import 'package:flutter/foundation.dart';
 
 import '../src.dart';
 
-// This implementation of the MyersDiff algorithm was originally written by David Bota 
+// This implementation of the MyersDiff algorithm was originally written by David Bota
 // over here https://gitlab.com/otsoaUnLoco/animated-stream-list.
-
-// ignore: avoid_classes_with_only_static_members
-class DiffUtil<E> {
-  static ItemDiffUtil eq;
-  static ItemDiffUtil cq;
-
-  static Future<List<Diff>> calculateDiff<E>(DiffCallback<E> cb) {
-    eq = cb.areItemsTheSame;
-    cq = cb.areItemsTheSame;
-    final args = _DiffArguments<E>(cb.oldList, cb.newList);
-    return compute(_myersDiff, args);
-  }
-}
 
 class _DiffArguments<E> {
   final List<E> oldList;
   final List<E> newList;
 
   _DiffArguments(this.oldList, this.newList);
+}
+
+// ignore: avoid_classes_with_only_static_members
+class DiffUtil<E> {
+  static ItemDiffUtil eq;
+  static ItemDiffUtil cq;
+
+  // ignore: constant_identifier_names
+  static const int ISOLATE_THRESHOLD = 1500;
+
+  static Future<List<Diff>> calculateDiff<E>(DiffCallback<E> cb) {
+    eq = cb.areItemsTheSame;
+    cq = cb.areItemsTheSame;
+
+    final args = _DiffArguments<E>(cb.oldList, cb.newList);
+
+    // Only spawn a new isolate for long lists
+    if ((args.newList.length * args.oldList.length) > ISOLATE_THRESHOLD) {
+      return compute(_myersDiff, args);
+    }
+
+    return Future.value(_myersDiff(args));
+  }
 }
 
 List<Diff> _myersDiff<E>(_DiffArguments<E> args) {

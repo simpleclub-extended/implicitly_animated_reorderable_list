@@ -196,6 +196,8 @@ class ImplicitlyAnimatedReorderableListState<E>
     // scroll position when the user drags an item outside the
     // current viewport.
     _controller = widget.controller ?? ScrollController();
+
+    _addReorderableUpdateAnimationSupport();
   }
 
   void onDragStarted(Key key) {
@@ -561,6 +563,41 @@ class ImplicitlyAnimatedReorderableListState<E>
         );
       },
     );
+  }
+
+  @override
+  Widget buildUpdatedItemWidget(E newItem) {
+    // We need to override this method, as AnimatedBuilder is not
+    // supported as a top-level item widget in reorderable lists.
+
+    final value = updateAnimController.value;
+
+    final oldItem = changes[newItem];
+    final item = value < 0.5 ? oldItem : newItem;
+
+    return updateItemBuilder(context, updateAnimation, item);
+  }
+
+  // A more complex and less efficient update animation support implementation.
+  void _addReorderableUpdateAnimationSupport() {
+    bool didUpdateList = false;
+
+    updateAnimController
+      ..addListener(() {
+        if (updateAnimController.isAnimating) {
+          if (!didUpdateList && updateAnimController.value > 0.5) {
+            setState(() {});
+            didUpdateList = true;
+          }
+
+          changes.keys.forEach(buildUpdatedItemWidget);
+        }
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+          didUpdateList = false;
+        }
+      });
   }
 
   @override
