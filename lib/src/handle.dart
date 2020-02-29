@@ -69,7 +69,7 @@ class _HandleState extends State<Handle> {
     _initialOffset = _isVertical ? pointer.dy : pointer.dx;
 
     _list?.onDragStarted(_reorderable?.key);
-    _reorderable?.setState(() {});
+    _reorderable.rebuild();
 
     _vibrate();
   }

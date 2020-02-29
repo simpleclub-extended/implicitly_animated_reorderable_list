@@ -547,19 +547,33 @@ class ImplicitlyAnimatedReorderableListState<E>
   }
 
   Widget _buildDraggedItem() {
+    final EdgeInsets listPadding = widget.padding ?? EdgeInsets.zero;
+
     return ValueListenableBuilder<double>(
+      //ignore: sort_child_properties_last
       child: _dragWidget,
       valueListenable: _pointerDeltaNotifier,
       builder: (context, pointer, dragWidget) {
         final delta = _dragStartOffset + pointer;
+        final dx = isVertical ? 0.0 : delta;
+        final dy = isVertical ? delta : 0.0;
 
         return Transform.translate(
-          offset: Offset(
-            isVertical ? 0 : delta,
-            isVertical ? delta : 0,
-          ),
+          offset: Offset(dx, dy),
           child: Container(
             key: _dragKey,
+            // Size the dragged item as big as it was in the list.
+            width: dragItem?.width,
+            height: dragItem?.height,
+            // Add the horizontal padding in a vertical list as
+            // a padding, to prevent the item from filling the lists insets.
+            padding: EdgeInsets.only(
+              left: isVertical ? listPadding.left : 0.0,
+              right: isVertical ? listPadding.right : 0.0,
+            ),
+            // In horizontal lists, add the top padding as a margin
+            // to offset the item from the top edge.
+            margin: EdgeInsets.only(top: !isVertical ? listPadding.top : 0.0),
             child: dragWidget,
           ),
         );
@@ -606,7 +620,6 @@ class ImplicitlyAnimatedReorderableListState<E>
   void dispose() {
     _scrollAdjuster?.cancel();
     _controller?.dispose();
-    // _itemTranslations.forEach((key, controller) => controller?.dispose());
     super.dispose();
   }
 }

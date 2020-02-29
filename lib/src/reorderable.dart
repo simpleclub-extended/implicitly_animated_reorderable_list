@@ -70,6 +70,12 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     }
   }
 
+  void rebuild() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   void _registerItem() {
     _list ??= ImplicitlyAnimatedReorderableList.of(context);
     assert(_list != null, 'No ImplicitlyAnimatedListView was found in the hirachy!');

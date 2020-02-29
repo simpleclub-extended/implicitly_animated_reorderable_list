@@ -79,10 +79,10 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
         title: HighlightText(
           query: text,
           text: lang.nativeName,
-          style: textTheme.body2.copyWith(
+          style: textTheme.bodyText1.copyWith(
             fontSize: 16,
           ),
-          activeStyle: textTheme.body2.copyWith(
+          activeStyle: textTheme.bodyText1.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w900,
           ),
@@ -90,10 +90,10 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
         subtitle: HighlightText(
           query: text,
           text: lang.englishName,
-          style: textTheme.body1.copyWith(
+          style: textTheme.bodyText2.copyWith(
             fontSize: 15,
           ),
-          activeStyle: textTheme.body1.copyWith(
+          activeStyle: textTheme.bodyText2.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
@@ -154,7 +154,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
             Expanded(
               child: Row(
                 children: <Widget>[
-                  BackButton(
+                  const BackButton(
                     color: Colors.white,
                   ),
                   Expanded(
@@ -162,7 +162,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
                       autofocus: true,
                       controller: _controller,
                       textInputAction: TextInputAction.search,
-                      style: textTheme.body2.copyWith(
+                      style: textTheme.bodyText1.copyWith(
                         color: Colors.white,
                         fontSize: 18,
                       ),
@@ -170,7 +170,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         hintText: 'Search for a language',
-                        hintStyle: textTheme.body2.copyWith(
+                        hintStyle: textTheme.bodyText1.copyWith(
                           color: Colors.grey.shade200,
                           fontSize: 16,
                         ),
@@ -181,7 +181,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
                     duration: const Duration(milliseconds: 350),
                     opacity: text.isEmpty ? 0.0 : 1.0,
                     child: IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.clear,
                         color: Colors.white,
                       ),
@@ -201,12 +201,12 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
+        children: const <Widget>[
           Icon(
             Icons.translate,
             color: Colors.grey,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             'No languages found!',
             style: TextStyle(

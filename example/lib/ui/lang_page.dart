@@ -50,7 +50,7 @@ class _LanguagePageState extends State<LanguagePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Languages Demo'),
+        title: const Text('Languages Demo'),
         backgroundColor: theme.accentColor,
         actions: <Widget>[
           _buildPopupMenuButton(textTheme),
@@ -63,7 +63,7 @@ class _LanguagePageState extends State<LanguagePage> {
         padding: const EdgeInsets.only(bottom: 24),
         children: <Widget>[
           _buildHeadline('Vertically'),
-          Divider(height: 0),
+          const Divider(height: 0),
           _buildVerticalLanguageList(),
           _buildFooter(context, textTheme),
           _buildHeadline('Horizontally'),
@@ -81,7 +81,7 @@ class _LanguagePageState extends State<LanguagePage> {
       areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
       onReorderStarted: (item, index) => setState(() => inReorder = true),
       onReorderFinished: (movedLanguage, from, to, newItems) {
-        // Update the underlying data when the item has been reordered
+        // Update the underlying data when the item has been reordered!
         onReorderFinished(newItems);
       },
       itemBuilder: (context, itemAnimation, lang, index) {
@@ -106,7 +106,7 @@ class _LanguagePageState extends State<LanguagePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   tile,
-                  Divider(height: 0),
+                  const Divider(height: 0),
                 ],
               ),
             );
@@ -203,7 +203,7 @@ class _LanguagePageState extends State<LanguagePage> {
                       Icons.delete,
                       color: Colors.white,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Delete',
                       style: textTheme.bodyText1.copyWith(
@@ -218,7 +218,7 @@ class _LanguagePageState extends State<LanguagePage> {
         : [];
 
     return Slidable(
-      actionPane: SlidableBehindActionPane(),
+      actionPane: const SlidableBehindActionPane(),
       actions: actions,
       secondaryActions: actions,
       child: Box(
@@ -272,7 +272,6 @@ class _LanguagePageState extends State<LanguagePage> {
       delay: const Duration(milliseconds: 500),
       child: Box(
         height: _horizontalHeight,
-        width: _horizontalHeight,
         borderRadius: 8,
         border: Border.all(
           color: Colors.grey.shade300,
@@ -309,7 +308,7 @@ class _LanguagePageState extends State<LanguagePage> {
         final result = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => LanguageSearchPage(),
+            builder: (context) => const LanguageSearchPage(),
           ),
         );
 
@@ -340,7 +339,7 @@ class _LanguagePageState extends State<LanguagePage> {
               ),
             ),
           ),
-          Divider(height: 0),
+          const Divider(height: 0),
         ],
       ),
     );
