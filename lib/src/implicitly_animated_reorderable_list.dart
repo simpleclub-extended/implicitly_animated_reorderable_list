@@ -429,10 +429,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
     _scrollAdjuster?.cancel();
 
-    // jumpTo() disposes of the current drag event which
-    // Scrollable expects us to do.
-    _controller.jumpTo(_controller.offset);
-
+    _disposeOfDragCallback();
     setState(() => _inDrag = false);
   }
 
@@ -451,6 +448,12 @@ class ImplicitlyAnimatedReorderableListState<E>
 
       _itemTranslations.clear();
     });
+  }
+
+  void _disposeOfDragCallback() {
+    // jumpTo() disposes of the current drag event which
+    // Scrollable expects us to do.
+    _controller.jumpTo(_controller.offset);
   }
 
   double getTranslation(Key key) => key == dragKey ? _dragDelta : _itemTranslations[key]?.value ?? 0.0;
@@ -562,9 +565,9 @@ class ImplicitlyAnimatedReorderableListState<E>
           offset: Offset(dx, dy),
           child: Container(
             key: _dragKey,
-            // Size the dragged item as big as it was in the list.
-            width: dragItem?.width,
-            height: dragItem?.height,
+            // Set a fixed width on the dragged item in horizontal
+            // lists to prevent it from expanding.
+            width: !isVertical ? dragItem?.width : null,
             // Add the horizontal padding in a vertical list as
             // a padding, to prevent the item from filling the lists insets.
             padding: EdgeInsets.only(

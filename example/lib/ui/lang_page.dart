@@ -32,8 +32,16 @@ class _LanguagePageState extends State<LanguagePage> {
   ];
 
   bool inReorder = false;
+  ScrollController scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController = ScrollController();
+  }
 
   void onReorderFinished(List<Language> newItems) {
+    scrollController.jumpTo(scrollController.offset);
     setState(() {
       inReorder = false;
 
@@ -57,6 +65,7 @@ class _LanguagePageState extends State<LanguagePage> {
         ],
       ),
       body: ListView(
+        controller: scrollController,
         // Prevent the ListView from scrolling when an item is
         // currently being dragged.
         physics: inReorder ? const NeverScrollableScrollPhysics() : null,
@@ -75,9 +84,12 @@ class _LanguagePageState extends State<LanguagePage> {
 
   // * An example of a vertically reorderable list.
   Widget _buildVerticalLanguageList() {
+    const listPadding = EdgeInsets.symmetric(horizontal: 0);
+
     return ImplicitlyAnimatedReorderableList<Language>(
       items: selectedLanguages,
       shrinkWrap: true,
+      padding: listPadding,
       areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
       onReorderStarted: (item, index) => setState(() => inReorder = true),
       onReorderFinished: (movedLanguage, from, to, newItems) {
@@ -224,6 +236,7 @@ class _LanguagePageState extends State<LanguagePage> {
       child: Box(
         color: color,
         elevation: elevation,
+        alignment: Alignment.center,
         child: ListTile(
           title: Text(
             lang.nativeName,
@@ -399,4 +412,19 @@ class _LanguagePageState extends State<LanguagePage> {
       }).toList(),
     );
   }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+}
+
+class Pair<A, B> {
+  final A first;
+  final B second;
+  Pair(
+    this.first,
+    this.second,
+  );
 }

@@ -93,7 +93,7 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     Widget buildChild([Animation animation]) {
       return widget.builder(
         context,
-        animation ?? AlwaysStoppedAnimation(0.0),
+        animation ?? const AlwaysStoppedAnimation(0.0),
         _inDrag,
       );
     }

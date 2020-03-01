@@ -36,7 +36,7 @@ class Box extends StatelessWidget {
   final Color splashColor;
   final Duration duration;
   final BoxConstraints constraints;
-  Box({
+  const Box({
     Key key,
     this.child,
     this.border,
@@ -59,8 +59,7 @@ class Box extends StatelessWidget {
     this.boxShape = BoxShape.rectangle,
     this.shadowDirection = ShadowDirection.bottomRight,
     this.padding = const EdgeInsets.all(0),
-  })  :
-        super(key: key);
+  }) : super(key: key);
 
   static const wrap = -1;
 
@@ -92,13 +91,13 @@ class Box extends StatelessWidget {
       content = Material(
         color: Colors.transparent,
         type: MaterialType.transparency,
-        shape: circle ? CircleBorder() : RoundedRectangleBorder(borderRadius: br),
+        shape: circle ? const CircleBorder() : RoundedRectangleBorder(borderRadius: br),
         child: InkWell(
           splashColor: splashColor ?? theme.splashColor,
           highlightColor: theme.highlightColor,
           hoverColor: theme.hoverColor,
           focusColor: theme.focusColor,
-          customBorder: circle ? CircleBorder() : RoundedRectangleBorder(borderRadius: br),
+          customBorder: circle ? const CircleBorder() : RoundedRectangleBorder(borderRadius: br),
           onTap: onTap,
           onLongPress: onLongPress,
           onDoubleTap: onDoubleTap,

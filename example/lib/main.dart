@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 
-import 'ui/lang_page.dart';
-import 'ui/ui.dart';
+import 'package:example/ui/lang_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -11,11 +9,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
       ),
     );
-
 
     return MaterialApp(
       title: 'Implicitly Animated Reorderable List Example',
@@ -27,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: LanguagePage(),
+      home: const LanguagePage(),
     );
   }
 }
