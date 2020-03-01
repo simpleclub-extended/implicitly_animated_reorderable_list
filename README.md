@@ -141,3 +141,7 @@ The diff algorithm that `ImplicitlyAnimatedList` uses was written by [Dawid Bota
 ### Roadmap
 
 You can take a look at the [Roadmap](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/roadmap.md) to see which featues I am working on or plan to implement in future versions.
+
+### Contribution
+
+If you like this package, consider giving it a star on [GitHub](https://github.com/BendixMa/implicitly_animated_reorderable_list) and a like on [pub.dev](https://pub.dev/packages/implicitly_animated_reorderable_list).
