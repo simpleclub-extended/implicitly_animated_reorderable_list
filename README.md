@@ -42,7 +42,7 @@ ImplicitlyAnimatedList<MyGenericType>(
   // List items are only built when they're scrolled into view.
   itemBuilder: (context, animation, item, index) {
     // Specifiy a transition to be used by the ImplicitlyAnimatedList.
-    // In this case a custom transition.
+    // See the Transitions section on how to import this transition.
     return SizeFadeTranstion(
       sizeFraction: 0.7,
       curve: Curves.easeInOut,
@@ -128,6 +128,16 @@ ImplicitlyAnimatedReorderableList<MyGenericType>(
 );
 ```
 > For a more in depth example click [here](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/example/lib/ui/lang_page.dart).
+
+### Transitions
+
+You can use some custom transitions (such as the `SizeFadeTransition`) for item animations by importing the transitions pack:
+
+```dart
+import 'package:implicitly_animated_reorderable_list/transitions.dart';
+```
+
+If you want to contribute your own custom transitions, feel free to add a pull request.
 
 ### Caveats
 

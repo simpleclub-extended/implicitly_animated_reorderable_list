@@ -1,11 +1,42 @@
 import 'package:flutter/material.dart';
 
+/// A transition that fades the `child` in or out before shrinking or expanding
+/// to the `childs` size along the `axis`.
+///
+/// This can be used as a item transition in an [ImplicitlyAnimatedReorderableList].
 class SizeFadeTranstion extends StatefulWidget {
+  /// The animation to be used.
   final Animation<double> animation;
+
+  /// The curve of the animation.
   final Curve curve;
+
+  /// How long the [Interval] for the [SizeTransition] should be.
+  ///
+  /// The value must be between 0 and 1.
+  ///
+  /// For example a `sizeFraction` of `0.66` would result in `Interval(0.0, 0.66)`
+  /// for the size animation and `Interval(0.66, 1.0)` for the opacity animation.
   final double sizeFraction;
+
+  /// [Axis.horizontal] modifies the width,
+  /// [Axis.vertical] modifies the height.
   final Axis axis;
+
+  /// Describes how to align the child along the axis the [animation] is
+  /// modifying.
+  ///
+  /// A value of -1.0 indicates the top when [axis] is [Axis.vertical], and the
+  /// start when [axis] is [Axis.horizontal]. The start is on the left when the
+  /// text direction in effect is [TextDirection.ltr] and on the right when it
+  /// is [TextDirection.rtl].
+  ///
+  /// A value of 1.0 indicates the bottom or end, depending upon the [axis].
+  ///
+  /// A value of 0.0 (the default) indicates the center for either [axis] value.
   final double axisAlignment;
+
+  /// The child widget.
   final Widget child;
   const SizeFadeTranstion({
     Key key,
