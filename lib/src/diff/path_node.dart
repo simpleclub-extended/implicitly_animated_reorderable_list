@@ -60,7 +60,7 @@ class DiffNode extends PathNode {
   ) : super(
           originIndex,
           revisedIndex,
-          previousNode == null ? null : previousNode.previousSnake(),
+          previousNode?.previousSnake(),
         );
 
   @override

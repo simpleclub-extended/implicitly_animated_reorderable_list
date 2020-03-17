@@ -2,14 +2,14 @@ import 'package:example/util/box.dart';
 import 'package:flutter/material.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 
-class TestPage extends StatefulWidget {
-  const TestPage({Key key}) : super(key: key);
+class FirebasePage extends StatefulWidget {
+  const FirebasePage({Key key}) : super(key: key);
 
   @override
-  _TestPageState createState() => _TestPageState();
+  _FirebasePageState createState() => _FirebasePageState();
 }
 
-class _TestPageState extends State<TestPage> {
+class _FirebasePageState extends State<FirebasePage> {
   List<Color> colors = List.from(Colors.accents);
 
   @override

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 /// to the `childs` size along the `axis`.
 ///
 /// This can be used as a item transition in an [ImplicitlyAnimatedReorderableList].
-class SizeFadeTranstion extends StatefulWidget {
+class SizeFadeTransition extends StatefulWidget {
   /// The animation to be used.
   final Animation<double> animation;
 
@@ -38,7 +38,7 @@ class SizeFadeTranstion extends StatefulWidget {
 
   /// The child widget.
   final Widget child;
-  const SizeFadeTranstion({
+  const SizeFadeTransition({
     Key key,
     @required this.animation,
     this.sizeFraction = 2 / 3,
@@ -55,10 +55,10 @@ class SizeFadeTranstion extends StatefulWidget {
         super(key: key);
 
   @override
-  _SizeFadeTranstionState createState() => _SizeFadeTranstionState();
+  _SizeFadeTransitionState createState() => _SizeFadeTransitionState();
 }
 
-class _SizeFadeTranstionState extends State<SizeFadeTranstion> {
+class _SizeFadeTransitionState extends State<SizeFadeTransition> {
   Animation size;
   Animation opacity;
 
@@ -69,7 +69,7 @@ class _SizeFadeTranstionState extends State<SizeFadeTranstion> {
   }
 
   @override
-  void didUpdateWidget(SizeFadeTranstion oldWidget) {
+  void didUpdateWidget(SizeFadeTransition oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final curve = CurvedAnimation(parent: widget.animation, curve: widget.curve);

@@ -110,7 +110,7 @@ class _LanguagePageState extends State<LanguagePage> {
             }
 
             // Specifiy an animation to be used.
-            return SizeFadeTranstion(
+            return SizeFadeTransition(
               sizeFraction: 0.7,
               curve: Curves.easeInOut,
               animation: itemAnimation,
@@ -165,7 +165,7 @@ class _LanguagePageState extends State<LanguagePage> {
 
               if (t > 0) return box;
 
-              return SizeFadeTranstion(
+              return SizeFadeTransition(
                 animation: itemAnimation,
                 axis: Axis.horizontal,
                 axisAlignment: 1.0,

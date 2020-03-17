@@ -112,10 +112,7 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     this.physics,
     this.shrinkWrap = false,
     this.padding,
-  })  : assert(itemBuilder != null),
-        assert(areItemsTheSame != null),
-        assert(onReorderFinished != null),
-        assert(items != null),
+  })  : assert(onReorderFinished != null),
         assert(
           dragDuration <= const Duration(milliseconds: 1500),
           'The drag duration should not be longer than 1500 milliseconds.',

@@ -123,7 +123,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
       updateDuration: const Duration(milliseconds: 400),
       areItemsTheSame: (a, b) => a == b,
       itemBuilder: (context, animation, lang, _) {
-        return SizeFadeTranstion(
+        return SizeFadeTransition(
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: animation,

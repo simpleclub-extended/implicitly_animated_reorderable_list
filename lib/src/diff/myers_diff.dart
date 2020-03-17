@@ -37,7 +37,7 @@ class MyersDiff<E> {
     bool spawnIsolate,
   }) {
     eq = areItemsTheSame ?? (a, b) => a == b;
-    cq = areItemsTheSame ?? (a, b) => a == b;
+    cq = (a, b) => false;
 
     final args = _DiffArguments<E>(oldList, newList);
 
@@ -72,7 +72,7 @@ List<Diff> _myersDiff<E>(_DiffArguments<E> args) {
     return [Deletion(0, oldSize)];
   }
 
-  final equals = MyersDiff.eq != null ? MyersDiff.eq : (a, b) => a == b;
+  final equals = MyersDiff.eq ?? (a, b) => a == b;
   final path = _buildPath(oldList, newList, equals);
   final diffs = _buildPatch(path, oldList, newList)..sort();
   return diffs.reversed.toList(growable: true);

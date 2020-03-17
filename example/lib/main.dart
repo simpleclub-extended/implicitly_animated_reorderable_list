@@ -1,8 +1,7 @@
-import 'package:example/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:example/ui/lang_page.dart';
+import 'package:example/ui/ui.dart';
 
 void main() => runApp(MyApp());
 
@@ -25,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: const TestPage(),
+      home: const LanguagePage(),
     );
   }
 }

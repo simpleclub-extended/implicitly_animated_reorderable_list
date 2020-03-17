@@ -68,7 +68,13 @@ abstract class ImplicitlyAnimatedListBase<W extends Widget, E> extends StatefulW
     @required this.removeDuration,
     @required this.updateDuration,
     @required this.spawnIsolate,
-  }) : super(key: key);
+  })  : assert(items != null),
+        assert(areItemsTheSame != null),
+        assert(itemBuilder != null),
+        assert(insertDuration != null),
+        assert(removeDuration != null),
+        assert(updateDuration != null),
+        super(key: key);
 }
 
 abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends ImplicitlyAnimatedListBase<W, E>, E>
@@ -165,7 +171,11 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
 
       final diffs = await _differ.value;
       if (diffs == null) return;
-      _delegate.applyDiffs(diffs);
+
+      await _delegate.applyDiffs(diffs);
+      dataSet = List.from(newData);
+
+      setState(() {});
 
       _updateAnimController
         ..reset()
@@ -187,7 +197,6 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @protected
   @override
   void onInserted(int index, E item) {
-    dataSet.insert(index, item);
     list.insertItem(index, duration: widget.insertDuration);
   }
 
@@ -195,7 +204,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @protected
   @override
   void onRemoved(int index) {
-    final item = dataSet.removeAt(index);
+    final item = oldData[index];
 
     list.removeItem(index, (context, animation) {
       if (removeItemBuilder != null) {
@@ -214,11 +223,8 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     for (final item in itemsChanged) {
       final index = startIndex + i;
       changes[item] = dataSet[index];
-      dataSet[index] = item;
       i++;
     }
-
-    setState(() {});
   }
 
   @nonVirtual
