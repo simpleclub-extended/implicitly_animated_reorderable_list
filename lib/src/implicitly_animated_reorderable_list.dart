@@ -144,8 +144,10 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
 class ImplicitlyAnimatedReorderableListState<E>
     extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
   GlobalKey _dragKey;
-  ScrollController _controller;
   Timer _scrollAdjuster;
+
+  ScrollController _controller;
+  ScrollController get scrollController => _controller;
 
   _Item dragItem;
   Reorderable _dragWidget;
@@ -200,6 +202,15 @@ class ImplicitlyAnimatedReorderableListState<E>
     _controller = widget.controller ?? ScrollController();
 
     _addReorderableUpdateAnimationSupport();
+  }
+
+  @override
+  void didUpdateWidget(ImplicitlyAnimatedReorderableList<E> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controller != null && widget.controller != _controller) {
+      _controller = widget.controller;
+    }
   }
 
   void onDragStarted(Key key) {
