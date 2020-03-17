@@ -62,7 +62,9 @@ ImplicitlyAnimatedList<MyGenericType>(
 );
 ```
 
-> Note as `AnimatedList` doesn't support item moves, a move is handled by removing the item from the old index and inserting it at the new index.
+> If you have a `CustomScrollView` you can use the `SliverImplicitlyAnimatedList`.
+
+> As `AnimatedList` doesn't support item moves, a move is handled by removing the item from the old index and inserting it at the new index.
 
 ### ImplicitlyAnimatedReorderableList
 
@@ -137,7 +139,7 @@ You can use some custom transitions (such as the `SizeFadeTransition`) for item 
 import 'package:implicitly_animated_reorderable_list/transitions.dart';
 ```
 
-If you want to contribute your own custom transitions, feel free to add a pull request.
+If you want to contribute your own custom transitions, feel free to make a pull request.
 
 ### Caveats
 
@@ -148,10 +150,10 @@ Also note that computing the diff between two very large lists my take significa
 
 The diff algorithm that `ImplicitlyAnimatedList` uses was written by [Dawid Bota](https://gitlab.com/otsoaUnLoco) at [GitLab](https://gitlab.com/otsoaUnLoco/animated-stream-list).
 
-### Roadmap
-
-You can take a look at the [Roadmap](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/roadmap.md) to see which featues I am working on or plan to implement in future versions.
-
 ### Contribution
 
 If you like this package, consider giving it a star on [GitHub](https://github.com/BendixMa/implicitly_animated_reorderable_list) and a like on [pub.dev](https://pub.dev/packages/implicitly_animated_reorderable_list).
+
+### Roadmap
+
+You can take a look at the [Roadmap](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/roadmap.md) to see which featues I am working on or plan to implement in future versions.

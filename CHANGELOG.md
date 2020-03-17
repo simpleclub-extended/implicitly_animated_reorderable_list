@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.5 to 0.1.9
+## 0.1.5 to 0.1.10
 - Bug fixes and performance improvements.
 
 ## 0.1.4
