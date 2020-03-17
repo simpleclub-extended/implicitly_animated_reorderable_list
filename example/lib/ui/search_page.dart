@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
+import 'package:implicitly_animated_reorderable_list/transitions.dart';
 
-import '../animations/animations.dart';
 import '../util/util.dart';
 
 class LanguageSearchPage extends StatefulWidget {
@@ -123,7 +123,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
       updateDuration: const Duration(milliseconds: 400),
       areItemsTheSame: (a, b) => a == b,
       itemBuilder: (context, animation, lang, _) {
-        return SizeFadeTranstion(
+        return SizeFadeTransition(
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: animation,

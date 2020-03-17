@@ -13,6 +13,7 @@ class Handler {
     if (!_invoked) {
       _callback = callback;
       _invoked = true;
+
       Future.delayed(delay, () {
         if (!isFinished) {
           callback();

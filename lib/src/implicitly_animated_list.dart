@@ -135,10 +135,7 @@ class ImplicitlyAnimatedList<E> extends StatelessWidget {
     this.physics,
     this.shrinkWrap = false,
     this.padding,
-  })  : assert(itemBuilder != null),
-        assert(areItemsTheSame != null),
-        assert(items != null),
-        super(key: key);
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

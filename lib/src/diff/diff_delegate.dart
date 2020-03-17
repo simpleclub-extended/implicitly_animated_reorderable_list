@@ -4,7 +4,7 @@ class DiffDelegate<E> {
   final DiffCallback<E> _callback;
   const DiffDelegate(this._callback);
 
-  void applyDiffs(List<Diff> diffs) {
+  Future<void> applyDiffs(List<Diff> diffs) async {
     for (final diff in diffs) {
       if (diff is Insertion) {
         _applyInsertion(diff as Insertion<E>);

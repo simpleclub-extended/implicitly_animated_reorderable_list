@@ -38,22 +38,15 @@ class Handle extends StatefulWidget {
 }
 
 class _HandleState extends State<Handle> {
+  // A custom handler used to cancel the pending onDragStart callbacks.
+  Handler _handler;
+  // The parent Reorderable item.
+  ReorderableState _reorderable;
   // The parent list.
   ImplicitlyAnimatedReorderableListState _list;
   // Whether the ImplicitlyAnimatedReorderableList has a
   // scrollDirection of Axis.vertical.
   bool get _isVertical => _list?.isVertical ?? true;
-
-  // Only initiate a drag when the list didn't scroll so as
-  // to avoid to initiate a drag when actually the user wants
-  // to scroll the list.
-  double _dragStartScrollOffset;
-  static const double _maxScrollDelta = 5.0;
-
-  // The parent Reorderable item.
-  ReorderableState _reorderable;
-  // A custom handler used to cancel the pending onDragStart callbacks.
-  Handler _handler;
 
   bool _inDrag = false;
 
@@ -62,8 +55,7 @@ class _HandleState extends State<Handle> {
   double get _delta => (_currentOffset ?? 0) - (_initialOffset ?? 0);
 
   void _onDragStarted(Offset pointer) {
-    final delta = (_list.scrollOffset - _dragStartScrollOffset).abs();
-    if (_inDrag || delta > _maxScrollDelta) return;
+    _removeScrollListener();
 
     _inDrag = true;
     _initialOffset = _isVertical ? pointer.dy : pointer.dx;
@@ -84,12 +76,32 @@ class _HandleState extends State<Handle> {
 
     _handler?.cancel();
     _list?.onDragEnded();
-
-    _vibrate();
   }
 
   void _vibrate() {
     if (widget.vibrate) HapticFeedback.mediumImpact();
+  }
+
+  // A Handle should only initiate a reorder when the list didn't change it scroll
+  // position in the meantime.
+
+  void _addScrollListener() {
+    if (widget.delay > Duration.zero) {
+      _list?.scrollController?.addListener(_cancelReorder);
+    }
+  }
+
+  void _removeScrollListener() {
+    if (widget.delay > Duration.zero) {
+      _list?.scrollController?.removeListener(_cancelReorder);
+    }
+  }
+
+  void _cancelReorder() {
+    _handler?.cancel();
+    _removeScrollListener();
+
+    if (_inDrag) _onDragEnded();
   }
 
   @override
@@ -104,9 +116,9 @@ class _HandleState extends State<Handle> {
         final pointer = event.localPosition;
 
         if (!_inDrag) {
-          _dragStartScrollOffset = _list.scrollOffset;
+          _cancelReorder();
 
-          _handler?.cancel();
+          _addScrollListener();
           _handler = postDuration(
             widget.delay,
             () => _onDragStarted(pointer),
@@ -119,16 +131,8 @@ class _HandleState extends State<Handle> {
 
         if (_inDrag) _onDragUpdated(pointer, delta.isNegative);
       },
-      onPointerUp: (event) {
-        _handler?.cancel();
-
-        if (_inDrag) _onDragEnded();
-      },
-      onPointerCancel: (event) {
-        _handler?.cancel();
-
-        if (_inDrag) _onDragEnded();
-      },
+      onPointerUp: (_) => _cancelReorder(),
+      onPointerCancel: (_) => _cancelReorder(),
       child: widget.child,
     );
   }

@@ -112,10 +112,7 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     this.physics,
     this.shrinkWrap = false,
     this.padding,
-  })  : assert(itemBuilder != null),
-        assert(areItemsTheSame != null),
-        assert(onReorderFinished != null),
-        assert(items != null),
+  })  : assert(onReorderFinished != null),
         assert(
           dragDuration <= const Duration(milliseconds: 1500),
           'The drag duration should not be longer than 1500 milliseconds.',
@@ -144,8 +141,10 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
 class ImplicitlyAnimatedReorderableListState<E>
     extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
   GlobalKey _dragKey;
-  ScrollController _controller;
   Timer _scrollAdjuster;
+
+  ScrollController _controller;
+  ScrollController get scrollController => _controller;
 
   _Item dragItem;
   Reorderable _dragWidget;
@@ -200,6 +199,15 @@ class ImplicitlyAnimatedReorderableListState<E>
     _controller = widget.controller ?? ScrollController();
 
     _addReorderableUpdateAnimationSupport();
+  }
+
+  @override
+  void didUpdateWidget(ImplicitlyAnimatedReorderableList<E> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controller != null && widget.controller != _controller) {
+      _controller = widget.controller;
+    }
   }
 
   void onDragStarted(Key key) {
