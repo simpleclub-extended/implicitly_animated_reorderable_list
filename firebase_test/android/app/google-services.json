@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "631770050118",
+    "firebase_url": "https://implicitlyanimatedreorderable.firebaseio.com",
+    "project_id": "implicitlyanimatedreorderable",
+    "storage_bucket": "implicitlyanimatedreorderable.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:631770050118:android:b1df8274670890c4d32447",
+        "android_client_info": {
+          "package_name": "com.example.firebase_test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "631770050118-t7t0mks2gu4q62g88af2el0l47821prc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARni_EMswZe88UVpX4-W6BT68KVx9ZdB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "631770050118-t7t0mks2gu4q62g88af2el0l47821prc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
