@@ -43,7 +43,7 @@ ImplicitlyAnimatedList<MyGenericType>(
   itemBuilder: (context, animation, item, index) {
     // Specifiy a transition to be used by the ImplicitlyAnimatedList.
     // See the Transitions section on how to import this transition.
-    return SizeFadeTranstion(
+    return SizeFadeTransition(
       sizeFraction: 0.7,
       curve: Curves.easeInOut,
       animation: animation,
