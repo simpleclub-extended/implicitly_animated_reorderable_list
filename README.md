@@ -100,7 +100,7 @@ ImplicitlyAnimatedReorderableList<MyGenericType>(
         final elevation = lerpDouble(0, 8, t);
         final color = Color.lerp(Colors.white, Colors.white.withOpacity(0.8), t);
 
-        return SizeFadeTranstion(
+        return SizeFadeTransition(
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: itemAnimation,
