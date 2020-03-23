@@ -16,7 +16,7 @@ class MyersDiff<E> {
   static ItemDiffUtil eq;
   static ItemDiffUtil cq;
 
-  static const int ISOLATE_THRESHOLD = 1500;
+  static int isolateThreshold = 1500;
 
   static Future<List<Diff>> withCallback<E>(
     DiffCallback<E> cb, {
@@ -43,7 +43,7 @@ class MyersDiff<E> {
 
     // We can significantly improve the performance by not spawning a new
     // isolate for shorter lists.
-    spawnIsolate ??= (newList.length * oldList.length) > ISOLATE_THRESHOLD;
+    spawnIsolate ??= (newList.length * oldList.length) > isolateThreshold;
     if (spawnIsolate) {
       return compute(_myersDiff, args);
     }
