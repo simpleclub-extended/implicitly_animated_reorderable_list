@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -9,6 +8,7 @@ import 'package:implicitly_animated_reorderable_list/transitions.dart';
 
 import '../util/util.dart';
 import 'search_page.dart';
+import 'vertical_nested_example.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({
@@ -32,23 +32,19 @@ class _LanguagePageState extends State<LanguagePage>
     spanish,
     french,
   ];
-  List<String> nestedList = List.generate(20, (i) => "$i");
+
   TabController tabController;
 
   bool inReorder = false;
 
-  GlobalKey nestedListKey = GlobalKey();
-  bool nestedInReorder = false;
   ScrollController scrollController;
-  ScrollController nestedScrollController;
-  Drag nestedDrag;
+
 
   @override
   void initState() {
     super.initState();
     scrollController = ScrollController();
-    nestedScrollController = ScrollController();
-    tabController = TabController(initialIndex: 0, length: 2, vsync: this);
+    tabController = TabController(initialIndex: 0, length: 3, vsync: this);
   }
 
   void onReorderFinished(List<Language> newItems) {
@@ -95,7 +91,18 @@ class _LanguagePageState extends State<LanguagePage>
                   height: 30,
                   child: Center(
                     child: Text(
-                      "Nested Demo",
+                      "Vertical Nested Demo",
+                      style: textTheme.body2.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 30,
+                  child: Center(
+                    child: Text(
+                      "Horizontal Nested Demo",
                       style: textTheme.body2.copyWith(
                         fontSize: 16,
                       ),
@@ -110,7 +117,8 @@ class _LanguagePageState extends State<LanguagePage>
                 controller: tabController,
                 children: <Widget>[
                   _buildVerticalAndHorizontalExamples(theme),
-                  _buildNestedExamples(),
+                  VerticalNestedExample(),
+                  _buildHorizontalNestedExample(),
                 ],
               ),
             )
@@ -480,120 +488,8 @@ class _LanguagePageState extends State<LanguagePage>
     super.dispose();
   }
 
-  Widget _buildNestedExamples() {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: SingleChildScrollView(
-            key: nestedListKey,
-            controller: nestedScrollController,
-            physics:
-                nestedInReorder ? const NeverScrollableScrollPhysics() : null,
-            child: Column(
-              children: <Widget>[
-                Card(
-                  child: Container(
-                      height: 60,
-                      child: const Center(child: Text('Sibling Content'))),
-                ),
-                GestureDetector(
-                  onVerticalDragStart: (DragStartDetails details) {
-                    nestedDrag = nestedScrollController.position
-                        .drag(details, () => nestedDrag = null);
-                  },
-                  onVerticalDragUpdate: (DragUpdateDetails details) {
-                    if (!nestedInReorder) {
-                      nestedDrag.update(details);
-                    } else {
-                      final RenderBox renderBox = nestedListKey.currentContext
-                          .findRenderObject() as RenderBox;
-                      final double dragLocalYOffset =
-                          renderBox.globalToLocal(details.globalPosition).dy;
-                      final ScrollPosition position =
-                          nestedScrollController.position;
-
-                      if (dragLocalYOffset < 50 && position.extentBefore > 0) {
-                        final DragUpdateDetails invertedDetails =
-                            DragUpdateDetails(
-                          sourceTimeStamp: details.sourceTimeStamp,
-                          primaryDelta: 10,
-                          delta: Offset(details.delta.dx, 10),
-                          globalPosition: details.globalPosition,
-                          localPosition: details.localPosition,
-                        );
-                        nestedDrag.update(invertedDetails);
-                      } else if (dragLocalYOffset >
-                              (renderBox.constraints.maxHeight - 50) &&
-                          position.extentAfter > 0) {
-                        final DragUpdateDetails invertedDetails =
-                            DragUpdateDetails(
-                          sourceTimeStamp: details.sourceTimeStamp,
-                          primaryDelta: -10,
-                          delta: Offset(details.delta.dx, -10),
-                          globalPosition: details.globalPosition,
-                          localPosition: details.localPosition,
-                        );
-                        nestedDrag.update(invertedDetails);
-                      }
-                    }
-                  },
-                  onVerticalDragCancel: () {
-                    nestedDrag?.cancel();
-                  },
-                  onVerticalDragEnd: (DragEndDetails details) {
-                    nestedDrag?.end(details);
-                  },
-                  child: ImplicitlyAnimatedReorderableList(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      items: nestedList,
-                      areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
-                      onReorderStarted: (item, from) {
-                        setState(() {
-                          nestedInReorder = true;
-                        });
-                      },
-                      onReorderFinished: (item, from, to, newList) {
-                        setState(() {
-                          nestedInReorder = false;
-                          nestedList
-                            ..clear()
-                            ..addAll(newList as List<String>);
-                        });
-                      },
-                      itemBuilder: (context, itemAnimation, item, index) {
-                        return Reorderable(
-                          key: ValueKey(item),
-                          builder: (context, dragAnimation, inDrag) {
-                            return Card(
-                              child: Container(
-                                height: 60,
-                                color: inDrag ? Colors.grey : null,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Center(child: Text(item)),
-                                    Handle(
-                                      controller: nestedScrollController,
-                                      child: Icon(Icons.menu),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }),
-                )
-              ],
-            ),
-          ),
-        )
-      ],
-    );
+  Widget _buildHorizontalNestedExample() {
+    return Container();
   }
 }
 
