@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -18,7 +19,8 @@ class LanguagePage extends StatefulWidget {
   _LanguagePageState createState() => _LanguagePageState();
 }
 
-class _LanguagePageState extends State<LanguagePage> {
+class _LanguagePageState extends State<LanguagePage>
+    with SingleTickerProviderStateMixin {
   static const double _horizontalHeight = 96;
   static const List<String> options = [
     'Shuffle',
@@ -30,14 +32,23 @@ class _LanguagePageState extends State<LanguagePage> {
     spanish,
     french,
   ];
+  List<String> nestedList = List.generate(20, (i) => "$i");
+  TabController tabController;
 
   bool inReorder = false;
+
+  GlobalKey nestedListKey = GlobalKey();
+  bool nestedInReorder = false;
   ScrollController scrollController;
+  ScrollController nestedScrollController;
+  Drag nestedDrag;
 
   @override
   void initState() {
     super.initState();
     scrollController = ScrollController();
+    nestedScrollController = ScrollController();
+    tabController = TabController(initialIndex: 0, length: 2, vsync: this);
   }
 
   void onReorderFinished(List<Language> newItems) {
@@ -57,28 +68,77 @@ class _LanguagePageState extends State<LanguagePage> {
     final textTheme = theme.textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Languages Demo'),
-        backgroundColor: theme.accentColor,
-        actions: <Widget>[
-          _buildPopupMenuButton(textTheme),
-        ],
-      ),
-      body: ListView(
-        controller: scrollController,
-        // Prevent the ListView from scrolling when an item is
-        // currently being dragged.
-        physics: inReorder ? const NeverScrollableScrollPhysics() : null,
-        padding: const EdgeInsets.only(bottom: 24),
-        children: <Widget>[
-          _buildHeadline('Vertically'),
-          const Divider(height: 0),
-          _buildVerticalLanguageList(),
-          _buildFooter(context, textTheme),
-          _buildHeadline('Horizontally'),
-          _buildHorizontalLanguageList(),
-        ],
-      ),
+        appBar: AppBar(
+          title: const Text('Languages Demo'),
+          backgroundColor: theme.accentColor,
+          actions: <Widget>[
+            _buildPopupMenuButton(textTheme),
+          ],
+        ),
+        body: Column(
+          children: <Widget>[
+            TabBar(
+              controller: tabController,
+              tabs: <Widget>[
+                Container(
+                  height: 30,
+                  child: Center(
+                    child: Text(
+                      "Languages Demo",
+                      style: textTheme.body2.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 30,
+                  child: Center(
+                    child: Text(
+                      "Nested Demo",
+                      style: textTheme.body2.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
+                controller: tabController,
+                children: <Widget>[
+                  _buildVerticalAndHorizontalExamples(theme),
+                  _buildNestedExamples(),
+                ],
+              ),
+            )
+          ],
+        ));
+  }
+
+  Widget _buildVerticalAndHorizontalExamples(ThemeData theme) {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: ListView(
+            controller: scrollController,
+            // Prevent the ListView from scrolling when an item is
+            // currently being dragged.
+            physics: inReorder ? const NeverScrollableScrollPhysics() : null,
+            padding: const EdgeInsets.only(bottom: 24),
+            children: <Widget>[
+              _buildHeadline('Vertically'),
+              const Divider(height: 0),
+              _buildVerticalLanguageList(),
+              _buildFooter(context, theme.textTheme),
+              _buildHeadline('Horizontally'),
+              _buildHorizontalLanguageList(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -155,7 +215,8 @@ class _LanguagePageState extends State<LanguagePage> {
         scrollDirection: Axis.horizontal,
         areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
         onReorderStarted: (item, index) => setState(() => inReorder = true),
-        onReorderFinished: (item, from, to, newItems) => onReorderFinished(newItems),
+        onReorderFinished: (item, from, to, newItems) =>
+            onReorderFinished(newItems),
         itemBuilder: (context, itemAnimation, item, index) {
           return Reorderable(
             key: ValueKey(item.toString()),
@@ -218,7 +279,7 @@ class _LanguagePageState extends State<LanguagePage> {
                     const SizedBox(height: 4),
                     Text(
                       'Delete',
-                      style: textTheme.bodyText1.copyWith(
+                      style: textTheme.body1.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -240,13 +301,13 @@ class _LanguagePageState extends State<LanguagePage> {
         child: ListTile(
           title: Text(
             lang.nativeName,
-            style: textTheme.bodyText1.copyWith(
+            style: textTheme.body1.copyWith(
               fontSize: 16,
             ),
           ),
           subtitle: Text(
             lang.englishName,
-            style: textTheme.bodyText2.copyWith(
+            style: textTheme.body2.copyWith(
               fontSize: 15,
             ),
           ),
@@ -256,7 +317,7 @@ class _LanguagePageState extends State<LanguagePage> {
             child: Center(
               child: Text(
                 '${selectedLanguages.indexOf(lang) + 1}',
-                style: textTheme.bodyText1.copyWith(
+                style: textTheme.body1.copyWith(
                   color: theme.accentColor,
                   fontSize: 16,
                 ),
@@ -300,12 +361,12 @@ class _LanguagePageState extends State<LanguagePage> {
             children: <Widget>[
               Text(
                 item.nativeName,
-                style: textTheme.bodyText1,
+                style: textTheme.body1,
               ),
               const SizedBox(height: 8),
               Text(
                 item.englishName,
-                style: textTheme.bodyText2,
+                style: textTheme.body2,
               ),
             ],
           ),
@@ -347,7 +408,7 @@ class _LanguagePageState extends State<LanguagePage> {
             ),
             title: Text(
               'Add a language',
-              style: textTheme.bodyText2.copyWith(
+              style: textTheme.body2.copyWith(
                 fontSize: 16,
               ),
             ),
@@ -377,7 +438,7 @@ class _LanguagePageState extends State<LanguagePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
             headline,
-            style: textTheme.bodyText2.copyWith(
+            style: textTheme.body2.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -406,7 +467,7 @@ class _LanguagePageState extends State<LanguagePage> {
           value: option,
           child: Text(
             option,
-            style: textTheme.bodyText2,
+            style: textTheme.body2,
           ),
         );
       }).toList(),
@@ -417,6 +478,122 @@ class _LanguagePageState extends State<LanguagePage> {
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+
+  Widget _buildNestedExamples() {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: SingleChildScrollView(
+            key: nestedListKey,
+            controller: nestedScrollController,
+            physics:
+                nestedInReorder ? const NeverScrollableScrollPhysics() : null,
+            child: Column(
+              children: <Widget>[
+                Card(
+                  child: Container(
+                      height: 60,
+                      child: const Center(child: Text('Sibling Content'))),
+                ),
+                GestureDetector(
+                  onVerticalDragStart: (DragStartDetails details) {
+                    nestedDrag = nestedScrollController.position
+                        .drag(details, () => nestedDrag = null);
+                  },
+                  onVerticalDragUpdate: (DragUpdateDetails details) {
+                    if (!nestedInReorder) {
+                      nestedDrag.update(details);
+                    } else {
+                      final RenderBox renderBox = nestedListKey.currentContext
+                          .findRenderObject() as RenderBox;
+                      final double dragLocalYOffset =
+                          renderBox.globalToLocal(details.globalPosition).dy;
+                      final ScrollPosition position =
+                          nestedScrollController.position;
+
+                      if (dragLocalYOffset < 50 && position.extentBefore > 0) {
+                        final DragUpdateDetails invertedDetails =
+                            DragUpdateDetails(
+                          sourceTimeStamp: details.sourceTimeStamp,
+                          primaryDelta: 10,
+                          delta: Offset(details.delta.dx, 10),
+                          globalPosition: details.globalPosition,
+                          localPosition: details.localPosition,
+                        );
+                        nestedDrag.update(invertedDetails);
+                      } else if (dragLocalYOffset >
+                              (renderBox.constraints.maxHeight - 50) &&
+                          position.extentAfter > 0) {
+                        final DragUpdateDetails invertedDetails =
+                            DragUpdateDetails(
+                          sourceTimeStamp: details.sourceTimeStamp,
+                          primaryDelta: -10,
+                          delta: Offset(details.delta.dx, -10),
+                          globalPosition: details.globalPosition,
+                          localPosition: details.localPosition,
+                        );
+                        nestedDrag.update(invertedDetails);
+                      }
+                    }
+                  },
+                  onVerticalDragCancel: () {
+                    nestedDrag?.cancel();
+                  },
+                  onVerticalDragEnd: (DragEndDetails details) {
+                    nestedDrag?.end(details);
+                  },
+                  child: ImplicitlyAnimatedReorderableList(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      items: nestedList,
+                      areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
+                      onReorderStarted: (item, from) {
+                        setState(() {
+                          nestedInReorder = true;
+                        });
+                      },
+                      onReorderFinished: (item, from, to, newList) {
+                        setState(() {
+                          nestedInReorder = false;
+                          nestedList
+                            ..clear()
+                            ..addAll(newList as List<String>);
+                        });
+                      },
+                      itemBuilder: (context, itemAnimation, item, index) {
+                        return Reorderable(
+                          key: ValueKey(item),
+                          builder: (context, dragAnimation, inDrag) {
+                            return Card(
+                              child: Container(
+                                height: 60,
+                                color: inDrag ? Colors.grey : null,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Center(child: Text(item)),
+                                    Handle(
+                                      controller: nestedScrollController,
+                                      child: Icon(Icons.menu),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }),
+                )
+              ],
+            ),
+          ),
+        )
+      ],
+    );
   }
 }
 

@@ -29,7 +29,8 @@ class _FirebasePageState extends State<FirebasePage> {
     );
   }
 
-  Reorderable buildItem(BuildContext context, Animation itemAnimation, Color color, int index) {
+  Reorderable buildItem(
+      BuildContext context, Animation itemAnimation, Color color, int index) {
     return Reorderable(
       key: ValueKey(color),
       builder: (context, dragAnimation, _) {
@@ -39,11 +40,13 @@ class _FirebasePageState extends State<FirebasePage> {
             color: color,
             height: 56,
             width: double.infinity,
-            border: const Border.symmetric(
-              vertical: BorderSide(
-                color: Colors.grey,
-              ),
-            ),
+            border: const Border(
+                top: BorderSide(
+                  color: Colors.grey,
+                ),
+                bottom: BorderSide(
+                  color: Colors.grey,
+                )),
           ),
         );
       },
