@@ -7,6 +7,7 @@ import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorder
 import 'package:implicitly_animated_reorderable_list/transitions.dart';
 
 import '../util/util.dart';
+import 'horizontal_nested_example.dart';
 import 'search_page.dart';
 import 'vertical_nested_example.dart';
 
@@ -39,7 +40,6 @@ class _LanguagePageState extends State<LanguagePage>
 
   ScrollController scrollController;
 
-
   @override
   void initState() {
     super.initState();
@@ -65,7 +65,7 @@ class _LanguagePageState extends State<LanguagePage>
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Languages Demo'),
+          title: const Text('Examples'),
           backgroundColor: theme.accentColor,
           actions: <Widget>[
             _buildPopupMenuButton(textTheme),
@@ -117,8 +117,8 @@ class _LanguagePageState extends State<LanguagePage>
                 controller: tabController,
                 children: <Widget>[
                   _buildVerticalAndHorizontalExamples(theme),
-                  VerticalNestedExample(),
-                  _buildHorizontalNestedExample(),
+                  const VerticalNestedExample(),
+                  const HorizontalNestedExample(),
                 ],
               ),
             )
@@ -486,10 +486,6 @@ class _LanguagePageState extends State<LanguagePage>
   void dispose() {
     scrollController.dispose();
     super.dispose();
-  }
-
-  Widget _buildHorizontalNestedExample() {
-    return Container();
   }
 }
 

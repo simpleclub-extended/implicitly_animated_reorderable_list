@@ -53,12 +53,10 @@ class _HandleState extends State<Handle> {
 
   bool _inDrag = false;
 
+  double _initialExtentBefore;
   double _initialOffset;
   double _currentOffset;
   double get _delta => (_currentOffset ?? 0) - (_initialOffset ?? 0);
-
-  double startExtentBefore;
-  Offset startOffset;
 
   void _onDragStarted(Offset pointer) {
     _removeScrollListener();
@@ -79,8 +77,7 @@ class _HandleState extends State<Handle> {
 
   void _onDragEnded() {
     _inDrag = false;
-    startExtentBefore = null;
-    startOffset = null;
+    _initialExtentBefore = null;
 
     _handler?.cancel();
     _list?.onDragEnded();
@@ -124,8 +121,7 @@ class _HandleState extends State<Handle> {
     return Listener(
       onPointerDown: (event) {
         final pointer = event.localPosition;
-        startExtentBefore = widget.controller?.position?.extentBefore ?? 0;
-        startOffset = event.localPosition;
+        _initialExtentBefore = widget.controller?.position?.extentBefore ?? 0;
 
         if (!_inDrag) {
           _cancelReorder();
@@ -142,14 +138,14 @@ class _HandleState extends State<Handle> {
         if (_isVertical) {
           final double position =
               ((widget.controller?.position?.extentBefore ?? 0) -
-                      startExtentBefore) +
-                  (event.localPosition.dy - startOffset.dy);
+                      _initialExtentBefore) +
+                  event.localPosition.dy;
           pointer = Offset(0, position);
         } else {
           final double position =
               ((widget.controller?.position?.extentBefore ?? 0) -
-                      startExtentBefore) +
-                  (event.localPosition.dx - startOffset.dx);
+                      _initialExtentBefore) +
+                  event.localPosition.dx;
           pointer = Offset(position, 0);
         }
         final delta = _isVertical ? event.delta.dy : event.delta.dx;

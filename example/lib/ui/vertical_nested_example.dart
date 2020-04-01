@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 
 class VerticalNestedExample extends StatefulWidget {
+  const VerticalNestedExample();
+
   @override
   State<StatefulWidget> createState() {
     return VerticalNestedExampleState();
@@ -32,8 +34,6 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
           child: SingleChildScrollView(
             key: nestedListKey,
             controller: nestedScrollController,
-            physics:
-                nestedInReorder ? const NeverScrollableScrollPhysics() : null,
             child: Column(
               children: <Widget>[
                 Card(
