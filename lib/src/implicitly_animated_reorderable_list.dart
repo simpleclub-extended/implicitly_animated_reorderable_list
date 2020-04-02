@@ -498,7 +498,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     postFrame(() {
       _listSize = isVertical ? listKey.height : listKey.width;
 
-      if (needsRebuild) setState(() {});
+      if (needsRebuild && mounted) setState(() {});
     });
   }
 
