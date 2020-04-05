@@ -79,10 +79,10 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
         title: HighlightText(
           query: text,
           text: lang.nativeName,
-          style: textTheme.bodyText1.copyWith(
+          style: textTheme.body1.copyWith(
             fontSize: 16,
           ),
-          activeStyle: textTheme.bodyText1.copyWith(
+          activeStyle: textTheme.body1.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w900,
           ),
@@ -90,10 +90,10 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
         subtitle: HighlightText(
           query: text,
           text: lang.englishName,
-          style: textTheme.bodyText2.copyWith(
+          style: textTheme.body2.copyWith(
             fontSize: 15,
           ),
-          activeStyle: textTheme.bodyText2.copyWith(
+          activeStyle: textTheme.body2.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
@@ -162,7 +162,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
                       autofocus: true,
                       controller: _controller,
                       textInputAction: TextInputAction.search,
-                      style: textTheme.bodyText1.copyWith(
+                      style: textTheme.body1.copyWith(
                         color: Colors.white,
                         fontSize: 18,
                       ),
@@ -170,7 +170,7 @@ class _LanguageSearchPageState extends State<LanguageSearchPage> {
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         hintText: 'Search for a language',
-                        hintStyle: textTheme.bodyText1.copyWith(
+                        hintStyle: textTheme.body1.copyWith(
                           color: Colors.grey.shade200,
                           fontSize: 16,
                         ),
