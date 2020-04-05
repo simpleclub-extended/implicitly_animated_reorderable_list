@@ -20,8 +20,7 @@ class LanguagePage extends StatefulWidget {
   _LanguagePageState createState() => _LanguagePageState();
 }
 
-class _LanguagePageState extends State<LanguagePage>
-    with SingleTickerProviderStateMixin {
+class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderStateMixin {
   static const double _horizontalHeight = 96;
   static const List<String> options = [
     'Shuffle',
@@ -34,10 +33,9 @@ class _LanguagePageState extends State<LanguagePage>
     french,
   ];
 
-  TabController tabController;
-
   bool inReorder = false;
 
+  TabController tabController;
   ScrollController scrollController;
 
   @override
@@ -70,47 +68,35 @@ class _LanguagePageState extends State<LanguagePage>
           actions: <Widget>[
             _buildPopupMenuButton(textTheme),
           ],
+          bottom: TabBar(
+            controller: tabController,
+            tabs: <Widget>[
+              Tab(
+                child: Text(
+                  'Languages Demo',
+                  textAlign: TextAlign.center,
+                  style: theme.tabBarTheme.labelStyle,
+                ),
+              ),
+              Tab(
+                child: Text(
+                  'Vertical Nested Demo',
+                  textAlign: TextAlign.center,
+                  style: theme.tabBarTheme.labelStyle,
+                ),
+              ),
+              Tab(
+                child: Text(
+                  'Horizontal Nested Demo',
+                  textAlign: TextAlign.center,
+                  style: theme.tabBarTheme.labelStyle,
+                ),
+              ),
+            ],
+          ),
         ),
         body: Column(
           children: <Widget>[
-            TabBar(
-              controller: tabController,
-              tabs: <Widget>[
-                Container(
-                  height: 30,
-                  child: Center(
-                    child: Text(
-                      "Languages Demo",
-                      style: textTheme.body2.copyWith(
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 30,
-                  child: Center(
-                    child: Text(
-                      "Vertical Nested Demo",
-                      style: textTheme.body2.copyWith(
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 30,
-                  child: Center(
-                    child: Text(
-                      "Horizontal Nested Demo",
-                      style: textTheme.body2.copyWith(
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             Expanded(
               child: TabBarView(
                 physics: const NeverScrollableScrollPhysics(),
@@ -223,8 +209,7 @@ class _LanguagePageState extends State<LanguagePage>
         scrollDirection: Axis.horizontal,
         areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
         onReorderStarted: (item, index) => setState(() => inReorder = true),
-        onReorderFinished: (item, from, to, newItems) =>
-            onReorderFinished(newItems),
+        onReorderFinished: (item, from, to, newItems) => onReorderFinished(newItems),
         itemBuilder: (context, itemAnimation, item, index) {
           return Reorderable(
             key: ValueKey(item.toString()),
