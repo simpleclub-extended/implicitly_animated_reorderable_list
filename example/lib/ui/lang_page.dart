@@ -77,6 +77,7 @@ class _LanguagePageState extends State<LanguagePage> {
           _buildFooter(context, textTheme),
           _buildHeadline('Horizontally'),
           _buildHorizontalLanguageList(),
+          const SizedBox(height: 500),
         ],
       ),
     );
@@ -264,7 +265,7 @@ class _LanguagePageState extends State<LanguagePage> {
             ),
           ),
           trailing: Handle(
-            delay: const Duration(milliseconds: 100),
+            delay: const Duration(milliseconds: 250),
             child: Icon(
               Icons.drag_handle,
               color: Colors.grey,

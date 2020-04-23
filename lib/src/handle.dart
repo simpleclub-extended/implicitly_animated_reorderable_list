@@ -38,6 +38,7 @@ class Handle extends StatefulWidget {
 }
 
 class _HandleState extends State<Handle> {
+  ScrollableState _scrollable;
   // A custom handler used to cancel the pending onDragStart callbacks.
   Handler _handler;
   // The parent Reorderable item.
@@ -87,13 +88,21 @@ class _HandleState extends State<Handle> {
 
   void _addScrollListener() {
     if (widget.delay > Duration.zero) {
-      _list?.scrollController?.addListener(_cancelReorder);
+      if (_list?.widget?.shrinkWrap == true) {
+        _scrollable.position.addListener(_cancelReorder);
+      } else {
+        _list?.scrollController?.addListener(_cancelReorder);
+      }
     }
   }
 
   void _removeScrollListener() {
     if (widget.delay > Duration.zero) {
-      _list?.scrollController?.removeListener(_cancelReorder);
+      if (_list?.widget?.shrinkWrap == true) {
+        _scrollable.position.removeListener(_cancelReorder);
+      } else {
+        _list?.scrollController?.removeListener(_cancelReorder);
+      }
     }
   }
 
@@ -110,6 +119,7 @@ class _HandleState extends State<Handle> {
     assert(_list != null, 'No ancestor ImplicitlyAnimatedReorderableList was found in the hierarchy!');
     _reorderable ??= Reorderable.of(context);
     assert(_reorderable != null, 'No ancestor Reorderable was found in the hierarchy!');
+    _scrollable = Scrollable.of(_list.context);
 
     return Listener(
       onPointerDown: (event) {
@@ -118,10 +128,15 @@ class _HandleState extends State<Handle> {
         if (!_inDrag) {
           _cancelReorder();
 
+          print('down');
+
           _addScrollListener();
           _handler = postDuration(
             widget.delay,
-            () => _onDragStarted(pointer),
+            () {
+              print('r');
+              _onDragStarted(pointer);
+            },
           );
         }
       },
