@@ -21,8 +21,6 @@ class Handle extends StatefulWidget {
   /// than `Duration.zero` as otherwise the list might become unscrollable.
   final Duration delay;
 
-  final ScrollController controller;
-
   /// Whether to vibrate when a drag has been initiated.
   final bool vibrate;
   const Handle({
@@ -30,7 +28,6 @@ class Handle extends StatefulWidget {
     @required this.child,
     this.delay = Duration.zero,
     this.vibrate = true,
-    this.controller,
   })  : assert(delay != null),
         assert(child != null),
         assert(vibrate != null),
@@ -41,6 +38,7 @@ class Handle extends StatefulWidget {
 }
 
 class _HandleState extends State<Handle> {
+  ScrollableState _scrollable;
   // A custom handler used to cancel the pending onDragStart callbacks.
   Handler _handler;
   // The parent Reorderable item.
@@ -53,7 +51,6 @@ class _HandleState extends State<Handle> {
 
   bool _inDrag = false;
 
-  double _initialExtentBefore;
   double _initialOffset;
   double _currentOffset;
   double get _delta => (_currentOffset ?? 0) - (_initialOffset ?? 0);
@@ -77,7 +74,6 @@ class _HandleState extends State<Handle> {
 
   void _onDragEnded() {
     _inDrag = false;
-    _initialExtentBefore = null;
 
     _handler?.cancel();
     _list?.onDragEnded();
@@ -92,13 +88,21 @@ class _HandleState extends State<Handle> {
 
   void _addScrollListener() {
     if (widget.delay > Duration.zero) {
-      _list?.scrollController?.addListener(_cancelReorder);
+      if (_list?.widget?.shrinkWrap == true) {
+        _scrollable.position.addListener(_cancelReorder);
+      } else {
+        _list?.scrollController?.addListener(_cancelReorder);
+      }
     }
   }
 
   void _removeScrollListener() {
     if (widget.delay > Duration.zero) {
-      _list?.scrollController?.removeListener(_cancelReorder);
+      if (_list?.widget?.shrinkWrap == true) {
+        _scrollable.position.removeListener(_cancelReorder);
+      } else {
+        _list?.scrollController?.removeListener(_cancelReorder);
+      }
     }
   }
 
@@ -112,16 +116,14 @@ class _HandleState extends State<Handle> {
   @override
   Widget build(BuildContext context) {
     _list ??= ImplicitlyAnimatedReorderableList.of(context);
-    assert(_list != null,
-        'No ancestor ImplicitlyAnimatedReorderableList was found in the hierarchy!');
+    assert(_list != null, 'No ancestor ImplicitlyAnimatedReorderableList was found in the hierarchy!');
     _reorderable ??= Reorderable.of(context);
-    assert(_reorderable != null,
-        'No ancestor Reorderable was found in the hierarchy!');
+    assert(_reorderable != null, 'No ancestor Reorderable was found in the hierarchy!');
+    _scrollable = Scrollable.of(_list.context);
 
     return Listener(
       onPointerDown: (event) {
         final pointer = event.localPosition;
-        _initialExtentBefore = widget.controller?.position?.extentBefore ?? 0;
 
         if (!_inDrag) {
           _cancelReorder();
@@ -129,25 +131,14 @@ class _HandleState extends State<Handle> {
           _addScrollListener();
           _handler = postDuration(
             widget.delay,
-            () => _onDragStarted(pointer),
+            () {
+              _onDragStarted(pointer);
+            },
           );
         }
       },
       onPointerMove: (event) {
-        Offset pointer;
-        if (_isVertical) {
-          final double position =
-              ((widget.controller?.position?.extentBefore ?? 0) -
-                      _initialExtentBefore) +
-                  event.localPosition.dy;
-          pointer = Offset(0, position);
-        } else {
-          final double position =
-              ((widget.controller?.position?.extentBefore ?? 0) -
-                      _initialExtentBefore) +
-                  event.localPosition.dx;
-          pointer = Offset(position, 0);
-        }
+        final pointer = event.localPosition;
         final delta = _isVertical ? event.delta.dy : event.delta.dx;
 
         if (_inDrag) _onDragUpdated(pointer, delta.isNegative);

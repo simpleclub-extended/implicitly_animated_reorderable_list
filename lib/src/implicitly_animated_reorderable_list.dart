@@ -8,11 +8,9 @@ import 'src.dart';
 
 typedef ReorderStartedCallback<E> = void Function(E item, int index);
 
-typedef ReorderFinishedCallback<E> = void Function(
-    E item, int from, int to, List<E> newItems);
+typedef ReorderFinishedCallback<E> = void Function(E item, int from, int to, List<E> newItems);
 
-class ImplicitlyAnimatedReorderableList<E>
-    extends ImplicitlyAnimatedListBase<Reorderable, E> {
+class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Reorderable, E> {
   /// Whether the scroll view scrolls in the reading direction.
   ///
   /// Defaults to false.
@@ -133,18 +131,15 @@ class ImplicitlyAnimatedReorderableList<E>
         );
 
   @override
-  ImplicitlyAnimatedReorderableListState<E> createState() =>
-      ImplicitlyAnimatedReorderableListState<E>();
+  ImplicitlyAnimatedReorderableListState<E> createState() => ImplicitlyAnimatedReorderableListState<E>();
 
   static ImplicitlyAnimatedReorderableListState of(BuildContext context) {
-    return context
-        .findAncestorStateOfType<ImplicitlyAnimatedReorderableListState>();
+    return context.findAncestorStateOfType<ImplicitlyAnimatedReorderableListState>();
   }
 }
 
 class ImplicitlyAnimatedReorderableListState<E>
-    extends ImplicitlyAnimatedListBaseState<Reorderable,
-        ImplicitlyAnimatedReorderableList<E>, E> {
+    extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
   GlobalKey _dragKey;
   Timer _scrollAdjuster;
 
@@ -272,8 +267,7 @@ class ImplicitlyAnimatedReorderableListState<E>
         _closestList.add(item);
       } else {
         final position = isVertical ? item.center.dy : item.center.dx;
-        if ((_motionUp && dragStart < position) ||
-            (!_motionUp && dragEnd > position)) {
+        if ((_motionUp && dragStart < position) || (!_motionUp && dragEnd > position)) {
           item.distance = ((_up ? dragStart : dragEnd) - position).abs();
           _closestList.add(item);
         }
@@ -376,14 +370,12 @@ class ImplicitlyAnimatedReorderableListState<E>
   void _adjustScrollPositionWhenNecessary() {
     _scrollAdjuster?.cancel();
     _scrollAdjuster = Timer.periodic(const Duration(milliseconds: 16), (_) {
-      if ((_up && scrollOffset <= 0) ||
-          (!_up && scrollOffset >= _maxScrollOffset)) return;
+      if ((_up && scrollOffset <= 0) || (!_up && scrollOffset >= _maxScrollOffset)) return;
 
       final dragBox = _dragKey?.renderBox;
       if (dragBox == null) return;
 
-      final dragOffset =
-          dragBox.localToGlobal(Offset.zero, ancestor: context.renderBox);
+      final dragOffset = dragBox.localToGlobal(Offset.zero, ancestor: context.renderBox);
       final dragItemStart = isVertical ? dragOffset.dy : dragOffset.dx;
       final dragItemEnd = dragItemStart + dragSize;
 
@@ -432,8 +424,7 @@ class ImplicitlyAnimatedReorderableListState<E>
       _cancelDrag();
     };
 
-    final delta =
-        closest != dragItem ? closest.start - dragStart : -_pointerDelta;
+    final delta = closest != dragItem ? closest.start - dragStart : -_pointerDelta;
 
     _dispatchMove(
       dragKey,
@@ -473,8 +464,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     _controller.jumpTo(_controller.offset);
   }
 
-  double getTranslation(Key key) =>
-      key == dragKey ? _dragDelta : _itemTranslations[key]?.value ?? 0.0;
+  double getTranslation(Key key) => key == dragKey ? _dragDelta : _itemTranslations[key]?.value ?? 0.0;
 
   void registerItem(ReorderableState item) {
     _items[item.key] = item;
@@ -527,8 +517,7 @@ class ImplicitlyAnimatedReorderableListState<E>
           itemBuilder: (context, index, animation) {
             final item = dataSet[index];
 
-            final Reorderable child =
-                buildItem(context, animation, item, index);
+            final Reorderable child = buildItem(context, animation, item, index);
             postFrame(() => _measureChild(child.key, index));
 
             if (dragKey != null && index == dragIndex) {
@@ -557,8 +546,7 @@ class ImplicitlyAnimatedReorderableListState<E>
           controller: _controller,
           scrollDirection: widget.scrollDirection,
           initialItemCount: newData.length,
-          physics:
-              inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
+          physics: inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
           padding: widget.padding,
           primary: widget.primary,
           reverse: widget.reverse,
@@ -633,8 +621,7 @@ class ImplicitlyAnimatedReorderableListState<E>
         }
       })
       ..addStatusListener((status) {
-        if (status == AnimationStatus.completed ||
-            status == AnimationStatus.dismissed) {
+        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
           didUpdateList = false;
         }
       });
@@ -676,9 +663,7 @@ class _Item extends Rect implements Comparable<_Item> {
   double distance;
 
   @override
-  int compareTo(_Item other) => distance != null && other.distance != null
-      ? distance.compareTo(other.distance)
-      : -1;
+  int compareTo(_Item other) => distance != null && other.distance != null ? distance.compareTo(other.distance) : -1;
 
   @override
   String toString() => '_Item key: $key, index: $index';
