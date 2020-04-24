@@ -91,6 +91,10 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// This parameter should not be null.
   final ReorderFinishedCallback<E> onReorderFinished;
 
+  final Widget header;
+
+  final Widget footer;
+
   const ImplicitlyAnimatedReorderableList({
     Key key,
     @required List<E> items,
@@ -102,16 +106,18 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
     bool spawnIsolate,
-    @required this.onReorderFinished,
-    this.onReorderStarted,
-    this.dragDuration = const Duration(milliseconds: 300),
-    this.scrollDirection = Axis.vertical,
     this.reverse = false,
+    this.scrollDirection = Axis.vertical,
     this.controller,
     this.primary,
     this.physics,
     this.shrinkWrap = false,
     this.padding,
+    this.dragDuration = const Duration(milliseconds: 300),
+    this.onReorderStarted,
+    @required this.onReorderFinished,
+    this.header,
+    this.footer,
   })  : assert(onReorderFinished != null),
         assert(
           dragDuration <= const Duration(milliseconds: 1500),
@@ -140,7 +146,21 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
 
 class ImplicitlyAnimatedReorderableListState<E>
     extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
-  GlobalKey _dragKey;
+  // The key of the custom scroll view.
+  final GlobalKey _listKey = GlobalKey(debugLabel: 'list_key');
+  // The key of the draggedItem.
+  final GlobalKey _dragKey = GlobalKey(debugLabel: 'drag_key');
+
+  // The key of the header.
+  final GlobalKey _headerKey = GlobalKey(debugLabel: 'header_key');
+  bool get hasHeader => widget.header != null;
+  double _headerHeight = 0;
+
+  // The key of the footer.
+  final GlobalKey _footerKey = GlobalKey(debugLabel: 'footer_key');
+  bool get hasFooter => widget.footer != null;
+  double _footerHeight = 0;
+
   Timer _scrollAdjuster;
 
   ScrollController _controller;
@@ -191,8 +211,6 @@ class ImplicitlyAnimatedReorderableListState<E>
   @override
   void initState() {
     super.initState();
-    _dragKey = GlobalKey();
-
     // The list must have a ScrollController in order to adjust the
     // scroll position when the user drags an item outside the
     // current viewport.
@@ -239,17 +257,23 @@ class ImplicitlyAnimatedReorderableListState<E>
 
     // Allow the dragged item to be overscrolled to allow for
     // continous scrolling while in drag.
-    final overscrollBound = _canScroll ? dragSize : 0;
+    final overscrollBound = _canScroll && !(hasHeader || hasFooter) ? dragSize : 0;
     // Constrain the dragged item to the bounds of the list.
-    final currentDelta = (_up ? dragItem.start : dragItem.end) + delta;
-    final minDelta = -(dragItem.start + overscrollBound);
-    final maxDelta = (_maxScrollOffset + _listSize) + overscrollBound;
-    if (currentDelta < minDelta || currentDelta > maxDelta) {
-      return;
-    }
+    final currentDelta = delta;
+    final minDelta = (_headerHeight - (dragItem.start + overscrollBound)) - _scrollDelta;
+    final maxDelta =
+        ((_maxScrollOffset + _listSize + overscrollBound) - (dragItem.bottom + _footerHeight)) - _scrollDelta;
 
     _pointerDelta = delta.clamp(minDelta, maxDelta);
     _dragDelta = _pointerDelta + _scrollDelta;
+
+    print('c $currentDelta');
+    print('min $minDelta');
+    print('max $maxDelta');
+
+    if (currentDelta < minDelta || currentDelta > maxDelta) {
+      return;
+    }
 
     _findClosestItem();
 
@@ -370,7 +394,13 @@ class ImplicitlyAnimatedReorderableListState<E>
   void _adjustScrollPositionWhenNecessary() {
     _scrollAdjuster?.cancel();
     _scrollAdjuster = Timer.periodic(const Duration(milliseconds: 16), (_) {
-      if ((_up && scrollOffset <= 0) || (!_up && scrollOffset >= _maxScrollOffset)) return;
+      final start = _headerHeight;
+      final end = _maxScrollOffset - _footerHeight;
+      final isAtStart = _up && scrollOffset < start;
+      final isAtEnd = !_up && scrollOffset > end;
+      if (isAtStart || isAtEnd) {
+        return;
+      }
 
       final dragBox = _dragKey?.renderBox;
       if (dragBox == null) return;
@@ -392,9 +422,13 @@ class ImplicitlyAnimatedReorderableListState<E>
 
         const maxSpeed = 20;
         final max = atLowerBound ? -maxSpeed : maxSpeed;
-        final scrollDelta = max * delta;
+        var newOffset = scrollOffset + (max * delta);
 
-        _controller.jumpTo(scrollOffset + scrollDelta);
+        if (!(scrollOffset < start) && !(scrollOffset > end)) {
+          newOffset = newOffset.clamp(start, end);
+        }
+
+        _controller.jumpTo(newOffset);
         onDragUpdated(_pointerDelta);
       }
     });
@@ -409,6 +443,10 @@ class ImplicitlyAnimatedReorderableListState<E>
 
     _onDragEnd = () {
       if (dragIndex != null) {
+        if (!_itemBoxes.containsKey(closest.key)) {
+          _measureChild(closest.key);
+        }
+
         final toIndex = _itemBoxes[closest.key].index;
         final item = dataSet.removeAt(dragIndex);
         dataSet.insert(toIndex, item);
@@ -485,10 +523,16 @@ class ImplicitlyAnimatedReorderableListState<E>
     final needsRebuild = _listSize == 0 || inDrag != _prevInDrag;
     _prevInDrag = inDrag;
 
-    postFrame(() {
-      _listSize = isVertical ? listKey.height : listKey.width;
+    double getSizeOfKey(GlobalKey key) => isVertical ? key.height : key.width;
 
-      if (needsRebuild && mounted) setState(() {});
+    postFrame(() {
+      _listSize = getSizeOfKey(_listKey);
+      _headerHeight = getSizeOfKey(_headerKey);
+      _footerHeight = getSizeOfKey(_footerKey);
+
+      if (needsRebuild && mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -509,50 +553,73 @@ class ImplicitlyAnimatedReorderableListState<E>
   Widget build(BuildContext context) {
     _onRebuild();
 
-    return Stack(
-      fit: StackFit.passthrough,
-      children: <Widget>[
-        AnimatedList(
-          key: listKey,
-          itemBuilder: (context, index, animation) {
-            final item = dataSet[index];
+    final scrollView = CustomScrollView(
+      key: _listKey,
+      controller: _controller,
+      scrollDirection: widget.scrollDirection,
+      physics: inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
+      primary: widget.primary,
+      reverse: widget.reverse,
+      shrinkWrap: widget.shrinkWrap,
+      slivers: <Widget>[
+        if (hasHeader)
+          SliverToBoxAdapter(
+            child: Container(
+              key: _headerKey,
+              child: widget.header,
+            ),
+          ),
+        SliverPadding(
+          padding: widget.padding ?? EdgeInsets.zero,
+          sliver: SliverAnimatedList(
+            // * Assign the animation key to the sliver *
+            key: animatedListKey,
+            initialItemCount: newData.length,
+            itemBuilder: (context, index, animation) {
+              final item = dataSet[index];
 
-            final Reorderable child = buildItem(context, animation, item, index);
-            postFrame(() => _measureChild(child.key, index));
+              final Reorderable child = buildItem(context, animation, item, index);
+              postFrame(() => _measureChild(child.key, index));
 
-            if (dragKey != null && index == dragIndex) {
-              final size = dragItem?.size;
-              // Determine if the dragged widget should be hidden
-              // immidiately, or with on frame delay in order to
-              // avoid item flash.
-              final mustRebuild = _dragWidget == null;
+              if (dragKey != null && index == dragIndex) {
+                final size = dragItem?.size;
+                // Determine if the dragged widget should be hidden
+                // immidiately, or with on frame delay in order to
+                // avoid item flash.
+                final mustRebuild = _dragWidget == null;
 
-              _dragWidget = child;
-              if (mustRebuild) postFrame(() => setState(() {}));
+                _dragWidget = child;
+                if (mustRebuild) postFrame(() => setState(() {}));
 
-              // The placeholder of the dragged item.
-              //
-              // Make sure not to use the actual widget but only its size
-              // when they have been determined, as a widget is only allowed
-              // to be laid out once.
-              return Invisible(
-                invisible: !mustRebuild,
-                child: mustRebuild ? child : SizedBox.fromSize(size: size),
-              );
-            }
+                // The placeholder of the dragged item.
+                //
+                // Make sure not to use the actual widget but only its size
+                // when they have been determined, as a widget is only allowed
+                // to be laid out once.
+                return Invisible(
+                  invisible: !mustRebuild,
+                  child: mustRebuild ? child : SizedBox.fromSize(size: size),
+                );
+              }
 
-            return child;
-          },
-          controller: _controller,
-          scrollDirection: widget.scrollDirection,
-          initialItemCount: newData.length,
-          physics: inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
-          padding: widget.padding,
-          primary: widget.primary,
-          reverse: widget.reverse,
-          shrinkWrap: widget.shrinkWrap,
+              return child;
+            },
+          ),
         ),
-        if (_dragWidget != null) _buildDraggedItem()
+        if (hasFooter)
+          SliverToBoxAdapter(
+            child: Container(
+              key: _footerKey,
+              child: widget.footer,
+            ),
+          ),
+      ],
+    );
+
+    return Stack(
+      children: <Widget>[
+        scrollView,
+        if (_dragWidget != null) _buildDraggedItem(),
       ],
     );
   }

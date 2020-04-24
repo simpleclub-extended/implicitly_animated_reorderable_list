@@ -203,7 +203,7 @@ class _SliverImplicitlyAnimatedListState<E>
   @override
   Widget build(BuildContext context) {
     return SliverAnimatedList(
-      key: listKey,
+      key: animatedListKey,
       initialItemCount: newData.length,
       itemBuilder: (context, index, animation) {
         final item = dataSet[index];

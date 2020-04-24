@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'src.dart';
@@ -12,13 +14,30 @@ class Reorderable extends StatefulWidget {
   /// transition between the normal and the dragged state of the item. The `inDrag` parameter
   /// indicates whether this item is currently being dragged/reordered.
   final ReorderableBuilder builder;
+
+  /// Used, as needed, to build the child this Reorderable.
+  ///
+  /// This can be used to show a child that should not have
+  /// any animation when being dragged or dropped.
+  final Widget child;
+
+  /// Creates a reorderable widget that must be the parent of every
+  /// item in an [ImplicitlyAnimatedReorderableList].
+  ///
+  /// Either [builder] or [child] must not be null. The [builder]
+  /// can be used, for custom animations when the item should be animated
+  /// between dragged and normal state.
+  /// 
+  /// When [child] is non-null, the default elevation animation will be
+  /// used instead.
   const Reorderable({
     /// A unique key that identifies this Reorderable. The value of the key should
     /// not change throughout the lifecycle of the item.
     @required Key key,
-    @required this.builder,
+    this.builder,
+    this.child,
   })  : assert(key != null),
-        assert(builder != null),
+        assert(builder != null || child != null),
         super(key: key);
 
   @override
@@ -52,7 +71,11 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
   @override
   void didUpdateWidget(Reorderable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _dragAnimation = CurvedAnimation(parent: _dragController, curve: Curves.linear);
+
+    _dragAnimation = CurvedAnimation(
+      parent: _dragController,
+      curve: Curves.linear,
+    );
   }
 
   bool _inDrag = false;
@@ -91,10 +114,16 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     _registerItem();
 
     Widget buildChild([Animation animation]) {
-      return widget.builder(
-        context,
-        animation ?? const AlwaysStoppedAnimation(0.0),
-        _inDrag,
+      animation ??= const AlwaysStoppedAnimation(0.0);
+
+      if (widget.builder != null) {
+        return widget.builder(context, animation, _inDrag);
+      }
+
+      return Material(
+        elevation: lerpDouble(0.0, 4.0, animation.value),
+        shadowColor: Colors.black26,
+        child: widget.child,
       );
     }
 
@@ -112,8 +141,8 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
       final isVertical = _list.isVertical;
 
       return AnimatedBuilder(
-        animation: _translation,
         child: child,
+        animation: _translation,
         builder: (context, child) {
           final offset = _translation.value;
 

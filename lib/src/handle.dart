@@ -86,9 +86,12 @@ class _HandleState extends State<Handle> {
   // A Handle should only initiate a reorder when the list didn't change it scroll
   // position in the meantime.
 
+  // When the list is 
+  bool get _useParentScrollable =>  _scrollable != null;
+
   void _addScrollListener() {
     if (widget.delay > Duration.zero) {
-      if (_list?.widget?.shrinkWrap == true) {
+      if (_useParentScrollable) {
         _scrollable.position.addListener(_cancelReorder);
       } else {
         _list?.scrollController?.addListener(_cancelReorder);
@@ -98,7 +101,7 @@ class _HandleState extends State<Handle> {
 
   void _removeScrollListener() {
     if (widget.delay > Duration.zero) {
-      if (_list?.widget?.shrinkWrap == true) {
+      if (_useParentScrollable) {
         _scrollable.position.removeListener(_cancelReorder);
       } else {
         _list?.scrollController?.removeListener(_cancelReorder);

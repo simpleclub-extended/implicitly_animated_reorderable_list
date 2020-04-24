@@ -7,9 +7,7 @@ import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorder
 import 'package:implicitly_animated_reorderable_list/transitions.dart';
 
 import '../util/util.dart';
-import 'horizontal_nested_example.dart';
-import 'search_page.dart';
-import 'vertical_nested_example.dart';
+import 'ui.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({
@@ -24,6 +22,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
   static const double _horizontalHeight = 96;
   static const List<String> options = [
     'Shuffle',
+    'Nested example',
   ];
 
   final List<Language> selectedLanguages = [
@@ -62,77 +61,28 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
     final textTheme = theme.textTheme;
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Examples'),
-          backgroundColor: theme.accentColor,
-          actions: <Widget>[
-            _buildPopupMenuButton(textTheme),
-          ],
-          bottom: TabBar(
-            controller: tabController,
-            tabs: <Widget>[
-              Tab(
-                child: Text(
-                  'Languages Demo',
-                  textAlign: TextAlign.center,
-                  style: theme.tabBarTheme.labelStyle,
-                ),
-              ),
-              Tab(
-                child: Text(
-                  'Vertical Nested Demo',
-                  textAlign: TextAlign.center,
-                  style: theme.tabBarTheme.labelStyle,
-                ),
-              ),
-              Tab(
-                child: Text(
-                  'Horizontal Nested Demo',
-                  textAlign: TextAlign.center,
-                  style: theme.tabBarTheme.labelStyle,
-                ),
-              ),
-            ],
-          ),
-        ),
-        body: Column(
-          children: <Widget>[
-            Expanded(
-              child: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
-                controller: tabController,
-                children: <Widget>[
-                  _buildVerticalAndHorizontalExamples(theme),
-                  const VerticalNestedExample(),
-                  const HorizontalNestedExample(),
-                ],
-              ),
-            )
-          ],
-        ));
-  }
-
-  Widget _buildVerticalAndHorizontalExamples(ThemeData theme) {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: ListView(
-            controller: scrollController,
-            // Prevent the ListView from scrolling when an item is
-            // currently being dragged.
-            physics: inReorder ? const NeverScrollableScrollPhysics() : null,
-            padding: const EdgeInsets.only(bottom: 24),
-            children: <Widget>[
-              _buildHeadline('Vertically'),
-              const Divider(height: 0),
-              _buildVerticalLanguageList(),
-              _buildFooter(context, theme.textTheme),
-              _buildHeadline('Horizontally'),
-              _buildHorizontalLanguageList(),
-            ],
-          ),
-        ),
-      ],
+      appBar: AppBar(
+        title: const Text('Examples'),
+        backgroundColor: theme.accentColor,
+        actions: <Widget>[
+          _buildPopupMenuButton(textTheme),
+        ],
+      ),
+      body: ListView(
+        controller: scrollController,
+        // Prevent the ListView from scrolling when an item is
+        // currently being dragged.
+        physics: inReorder ? const NeverScrollableScrollPhysics() : null,
+        padding: const EdgeInsets.only(bottom: 24),
+        children: <Widget>[
+          _buildHeadline('Vertically'),
+          const Divider(height: 0),
+          _buildVerticalLanguageList(),
+          _buildFooter(context, theme.textTheme),
+          _buildHeadline('Horizontally'),
+          _buildHorizontalLanguageList(),
+        ],
+      ),
     );
   }
 
@@ -272,7 +222,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
                     const SizedBox(height: 4),
                     Text(
                       'Delete',
-                      style: textTheme.body1.copyWith(
+                      style: textTheme.bodyText2.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -294,13 +244,13 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
         child: ListTile(
           title: Text(
             lang.nativeName,
-            style: textTheme.body1.copyWith(
+            style: textTheme.bodyText2.copyWith(
               fontSize: 16,
             ),
           ),
           subtitle: Text(
             lang.englishName,
-            style: textTheme.body2.copyWith(
+            style: textTheme.bodyText1.copyWith(
               fontSize: 15,
             ),
           ),
@@ -310,7 +260,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
             child: Center(
               child: Text(
                 '${selectedLanguages.indexOf(lang) + 1}',
-                style: textTheme.body1.copyWith(
+                style: textTheme.bodyText2.copyWith(
                   color: theme.accentColor,
                   fontSize: 16,
                 ),
@@ -354,12 +304,12 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
             children: <Widget>[
               Text(
                 item.nativeName,
-                style: textTheme.body1,
+                style: textTheme.bodyText2,
               ),
               const SizedBox(height: 8),
               Text(
                 item.englishName,
-                style: textTheme.body2,
+                style: textTheme.bodyText1,
               ),
             ],
           ),
@@ -401,7 +351,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
             ),
             title: Text(
               'Add a language',
-              style: textTheme.body2.copyWith(
+              style: textTheme.bodyText1.copyWith(
                 fontSize: 16,
               ),
             ),
@@ -431,7 +381,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
             headline,
-            style: textTheme.body2.copyWith(
+            style: textTheme.bodyText1.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -453,6 +403,14 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
           case 'Shuffle':
             setState(selectedLanguages.shuffle);
             break;
+          case 'Nested example':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const VerticalNestedExample(),
+              ),
+            );
+            break;
         }
       },
       itemBuilder: (context) => options.map((option) {
@@ -460,7 +418,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
           value: option,
           child: Text(
             option,
-            style: textTheme.body2,
+            style: textTheme.bodyText1,
           ),
         );
       }).toList(),

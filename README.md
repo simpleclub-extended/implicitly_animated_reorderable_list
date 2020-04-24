@@ -3,10 +3,10 @@
 A Flutter `ListView` that implicitly calculates the changes between two lists using the `MyersDiff` algorithm and animates between them for you. The `ImplicitlyAnimatedReorderableList` adds reordering support to its items with fully custom animations.
 
 <p style="text-align:center">
-    <img width="356px" alt="Demo" src="https://raw.githubusercontent.com/BendixMa/implicitly_animated_reorderable_list/master/assets/demo.gif"/>
+    <img width="356px" alt="Demo" src="https://raw.githubusercontent.com/bnxm/implicitly_animated_reorderable_list/master/assets/demo.gif"/>
 </p>
 
-Click [here](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/example/lib/ui/) to view the full example.
+Click [here](https://github.com/bnxm/implicitly_animated_reorderable_list/blob/master/example/lib/ui/) to view the full example.
 
 ## Installing
 
@@ -129,7 +129,7 @@ ImplicitlyAnimatedReorderableList<MyGenericType>(
   },
 );
 ```
-> For a more in depth example click [here](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/example/lib/ui/lang_page.dart).
+> For a more in depth example click [here](https://github.com/bnxm/implicitly_animated_reorderable_list/blob/master/example/lib/ui/lang_page.dart).
 
 ### Transitions
 
@@ -152,8 +152,8 @@ The diff algorithm that `ImplicitlyAnimatedList` uses was written by [Dawid Bota
 
 ### Contribution
 
-If you like this package, consider giving it a star on [GitHub](https://github.com/BendixMa/implicitly_animated_reorderable_list) and a like on [pub.dev](https://pub.dev/packages/implicitly_animated_reorderable_list).
+If you like this package, consider giving it a star on [GitHub](https://github.com/bnxm/implicitly_animated_reorderable_list) and a like on [pub.dev](https://pub.dev/packages/implicitly_animated_reorderable_list).
 
 ### Roadmap
 
-You can take a look at the [Roadmap](https://github.com/BendixMa/implicitly_animated_reorderable_list/blob/master/roadmap.md) to see which featues I am working on or plan to implement in future versions.
+You can take a look at the [Roadmap](https://github.com/bnxm/implicitly_animated_reorderable_list/blob/master/roadmap.md) to see which featues I am working on or plan to implement in future versions.

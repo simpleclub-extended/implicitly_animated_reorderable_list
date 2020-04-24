@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 export 'handler.dart';
@@ -10,11 +12,6 @@ void ifTrue(bool condition, Function callback) {
 
 void postFrame(VoidCallback callback) => WidgetsBinding.instance.addPostFrameCallback((_) => callback());
 
-extension Any<T> on T {
-
-  E let<E>(E Function(T) lambda) => lambda(this);
-}
-
 extension ListExtension<E> on List<E> {
   E getOrNull(int index) => index < length ? this[index] : null;
 
@@ -23,4 +20,7 @@ extension ListExtension<E> on List<E> {
 
 extension NumExtension<T extends num> on T {
   bool isBetween(T min, T max) => this >= min && this <= max;
+
+  T atLeast(T min) => math.max(this, min);
+  T atMost(T max) => math.min(this, max);
 }
