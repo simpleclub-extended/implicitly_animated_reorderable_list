@@ -24,7 +24,6 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
         backgroundColor: Colors.amber,
       ),
       body: ImplicitlyAnimatedReorderableList<String>(
-        shrinkWrap: true,
         items: nestedList,
         areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
         onReorderFinished: (item, from, to, newList) {

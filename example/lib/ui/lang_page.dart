@@ -78,7 +78,6 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
           _buildHeadline('Vertically'),
           const Divider(height: 0),
           _buildVerticalLanguageList(),
-          _buildFooter(context, theme.textTheme),
           _buildHeadline('Horizontally'),
           _buildHorizontalLanguageList(),
         ],
@@ -88,7 +87,37 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
 
   // * An example of a vertically reorderable list.
   Widget _buildVerticalLanguageList() {
+    final theme = Theme.of(context);
     const listPadding = EdgeInsets.symmetric(horizontal: 0);
+
+    Widget buildReorderable(
+      Language lang,
+      Widget Function(Widget tile) transitionBuilder,
+    ) {
+      return Reorderable(
+        key: ValueKey(lang),
+        builder: (context, dragAnimation, inDrag) {
+          final t = dragAnimation.value;
+          final tile = _buildTile(t, lang);
+
+          // If the item is in drag, only return the tile as the
+          // SizeFadeTransition would clip the shadow.
+          if (t > 0.0) {
+            return tile;
+          }
+
+          return transitionBuilder(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                tile,
+                const Divider(height: 0),
+              ],
+            ),
+          );
+        },
+      );
+    }
 
     return ImplicitlyAnimatedReorderableList<Language>(
       items: selectedLanguages,
@@ -101,51 +130,24 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
         onReorderFinished(newItems);
       },
       itemBuilder: (context, itemAnimation, lang, index) {
-        return Reorderable(
-          key: ValueKey(lang),
-          builder: (context, dragAnimation, inDrag) {
-            final t = dragAnimation.value;
-            final tile = _buildTile(t, lang);
-
-            // If the item is in drag, only return the tile as the
-            // SizeFadeTransition would clip the shadow.
-            if (t > 0.0) {
-              return tile;
-            }
-
-            // Specifiy an animation to be used.
-            return SizeFadeTransition(
-              sizeFraction: 0.7,
-              curve: Curves.easeInOut,
-              animation: itemAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  tile,
-                  const Divider(height: 0),
-                ],
-              ),
-            );
-          },
-        );
+        return buildReorderable(lang, (tile) {
+          return SizeFadeTransition(
+            sizeFraction: 0.7,
+            curve: Curves.easeInOut,
+            animation: itemAnimation,
+            child: tile,
+          );
+        });
       },
       updateItemBuilder: (context, itemAnimation, lang) {
-        return Reorderable(
-          key: ValueKey(lang),
-          builder: (context, dragAnimation, inDrag) {
-            return FadeTransition(
-              opacity: itemAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  _buildTile(0.0, lang),
-                  const Divider(height: 0),
-                ],
-              ),
-            );
-          },
-        );
+        return buildReorderable(lang, (tile) {
+          return FadeTransition(
+            opacity: itemAnimation,
+            child: tile,
+          );
+        });
       },
+      footer: _buildFooter(context, theme.textTheme),
     );
   }
 
@@ -182,12 +184,10 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
         updateItemBuilder: (context, itemAnimation, item) {
           return Reorderable(
             key: ValueKey(item.toString()),
-            builder: (context, dragAnimation, inDrag) {
-              return FadeTransition(
-                opacity: itemAnimation,
-                child: _buildBox(item, 0),
-              );
-            },
+            child: FadeTransition(
+              opacity: itemAnimation,
+              child: _buildBox(item, 0),
+            ),
           );
         },
       ),

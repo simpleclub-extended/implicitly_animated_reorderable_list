@@ -13,12 +13,13 @@ Click [here](https://github.com/bnxm/implicitly_animated_reorderable_list/blob/m
 Add it to your `pubspec.yaml` file:
 ```yaml
 dependencies:
-  implicitly_animated_reorderable_list: ^0.1.10
+  implicitly_animated_reorderable_list: ^0.2.0
 ```
 Install packages from the command line
 ```
 flutter packages get
 ```
+If you like this package, consider supporting it by giving it a star on [GitHub](https://github.com/bnxm/implicitly_animated_reorderable_list) and a like on [pub.dev](https://pub.dev/packages/implicitly_animated_reorderable_list) :heart:
 
 ## Usage
 
@@ -144,15 +145,11 @@ If you want to contribute your own custom transitions, feel free to make a pull 
 ### Caveats
 
 Note that this package is still in its very early phase and not enough testing has been done to guarantee stability.  
-Also note that computing the diff between two very large lists my take significant amount of time (the computation is done on a background isolate though).
+Also note that computing the diff between two very large lists may take a significant amount of time (the computation is done on a background isolate though unless `spawnIsolate` is set to `false`).
 
 ### Acknowledgements
 
 The diff algorithm that `ImplicitlyAnimatedList` uses was written by [Dawid Bota](https://gitlab.com/otsoaUnLoco) at [GitLab](https://gitlab.com/otsoaUnLoco/animated-stream-list).
-
-### Contribution
-
-If you like this package, consider giving it a star on [GitHub](https://github.com/bnxm/implicitly_animated_reorderable_list) and a like on [pub.dev](https://pub.dev/packages/implicitly_animated_reorderable_list).
 
 ### Roadmap
 

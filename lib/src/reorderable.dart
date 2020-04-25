@@ -27,7 +27,7 @@ class Reorderable extends StatefulWidget {
   /// Either [builder] or [child] must not be null. The [builder]
   /// can be used, for custom animations when the item should be animated
   /// between dragged and normal state.
-  /// 
+  ///
   /// When [child] is non-null, the default elevation animation will be
   /// used instead.
   const Reorderable({
@@ -114,17 +114,12 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     _registerItem();
 
     Widget buildChild([Animation animation]) {
-      animation ??= const AlwaysStoppedAnimation(0.0);
-
-      if (widget.builder != null) {
-        return widget.builder(context, animation, _inDrag);
+      if (widget.child != null) {
+        return widget.child;
       }
 
-      return Material(
-        elevation: lerpDouble(0.0, 4.0, animation.value),
-        shadowColor: Colors.black26,
-        child: widget.child,
-      );
+      animation ??= const AlwaysStoppedAnimation(0.0);
+      return widget.builder(context, animation, _inDrag);
     }
 
     Widget child;

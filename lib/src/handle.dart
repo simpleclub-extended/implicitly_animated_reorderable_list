@@ -19,10 +19,21 @@ class Handle extends StatefulWidget {
   ///
   /// If the Handle wraps the whole item, the delay should be greater
   /// than `Duration.zero` as otherwise the list might become unscrollable.
+  ///
+  /// When the [ImplicitlyAnimatedReorderableList] was scrolled in the mean time,
+  /// the reorder will be canceled.
+  /// If the [ImplicitlyAnimatedReorderableList] uses a `NeverScrollableScrollPhysics`
+  /// the Handle will instead use a parent `Scrollable` if there is one.
   final Duration delay;
 
   /// Whether to vibrate when a drag has been initiated.
   final bool vibrate;
+
+  /// Creates a widget that can initiate a drag/reorder of an item inside an
+  /// [ImplicitlyAnimatedReorderableList].
+  ///
+  /// A Handle must have a [Reorderable] and an [ImplicitlyAnimatedReorderableList]
+  /// as its ancestor.
   const Handle({
     Key key,
     @required this.child,
@@ -86,8 +97,12 @@ class _HandleState extends State<Handle> {
   // A Handle should only initiate a reorder when the list didn't change it scroll
   // position in the meantime.
 
-  // When the list is 
-  bool get _useParentScrollable =>  _scrollable != null;
+  bool get _useParentScrollable {
+    final hasParent = _scrollable != null;
+    final physics = _list?.widget?.physics;
+
+    return hasParent && physics != null && physics is NeverScrollableScrollPhysics;
+  }
 
   void _addScrollListener() {
     if (widget.delay > Duration.zero) {
