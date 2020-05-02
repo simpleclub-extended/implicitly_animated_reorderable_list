@@ -123,6 +123,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
     return ImplicitlyAnimatedReorderableList<Language>(
       items: selectedLanguages,
       shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: listPadding,
       areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
       onReorderStarted: (item, index) => setState(() => inReorder = true),

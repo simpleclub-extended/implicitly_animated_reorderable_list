@@ -283,7 +283,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
       setState(() => _inDrag = true);
 
-      widget.onReorderStarted?.call(dataSet[_dragIndex], _dragIndex);
+      widget.onReorderStarted?.call(data[_dragIndex], _dragIndex);
 
       _adjustScrollPositionWhenNecessary();
     }
@@ -491,14 +491,14 @@ class ImplicitlyAnimatedReorderableListState<E>
         }
 
         final toIndex = _itemBoxes[_next.key].index;
-        final item = dataSet.removeAt(_dragIndex);
-        dataSet.insert(toIndex, item);
+        final item = data.removeAt(_dragIndex);
+        data.insert(toIndex, item);
 
         widget.onReorderFinished?.call(
           item,
           _dragIndex,
           toIndex,
-          List<E>.from(dataSet),
+          List<E>.from(data),
         );
       }
 
@@ -617,9 +617,9 @@ class ImplicitlyAnimatedReorderableListState<E>
           sliver: SliverAnimatedList(
             // * Assign the animation key to the sliver *
             key: animatedListKey,
-            initialItemCount: newData.length,
+            initialItemCount: newList.length,
             itemBuilder: (context, index, animation) {
-              final item = dataSet[index];
+              final item = data[index];
 
               final Reorderable child = buildItem(context, animation, item, index);
               postFrame(() => _measureChild(child.key, index));

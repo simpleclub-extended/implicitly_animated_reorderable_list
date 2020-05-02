@@ -84,10 +84,10 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
 
   @nonVirtual
   @protected
-  dynamic get list => animatedListKey.currentState;
+  SliverAnimatedListState get list => animatedListKey.currentState;
 
   DiffDelegate _delegate;
-  CancelableOperation _differ;
+  CancelableOperation _diffOperation;
 
   // Animation controller for custom animation that are not supported
   // by the [AnimatedList], like updates.
@@ -96,24 +96,28 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   Animation<double> _updateAnimation;
   Animation<double> get updateAnimation => _updateAnimation;
 
-  @protected
-  List<E> dataSet;
-  @protected
-  List<E> newData;
-  @protected
-  List<E> oldData;
-  @protected
-  Map<E, E> changes = {};
+  // The currently active items.
+  List<E> _data;
+  List<E> get data => _data;
+  // The items that have newly come in that
+  // will get diffed into the dataset.
+  List<E> _newItems;
+  // The previous dataSet.
+  List<E> _oldItems;
+
+  @nonVirtual
+  @override
+  List<E> get newList => _newItems;
+
+  @nonVirtual
+  @override
+  List<E> get oldList => _oldItems;
+
+  final Map<E, E> _changes = {};
 
   @nonVirtual
   @protected
-  @override
-  List<E> get newList => newData;
-
-  @nonVirtual
-  @protected
-  @override
-  List<E> get oldList => oldData;
+  Map<E, E> get changes => _changes;
 
   @nonVirtual
   @protected
@@ -129,11 +133,11 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   void initState() {
     super.initState();
     animatedListKey = GlobalKey();
-    dataSet = List<E>.from(widget.items);
+
+    _data = List<E>.from(widget.items);
     _delegate = DiffDelegate(this);
 
     _updateAnimController = AnimationController(vsync: this);
-
     _updateAnimation = TweenSequence([
       TweenSequenceItem(
         tween: Tween(begin: 1.0, end: 0.0),
@@ -152,8 +156,8 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   void didUpdateWidget(ImplicitlyAnimatedListBase oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    newData = List<E>.from(widget.items);
-    oldData = List<E>.from(dataSet);
+    _newItems = List<E>.from(widget.items);
+    _oldItems = List<E>.from(data);
 
     _updateAnimController.duration = widget.updateDuration;
 
@@ -161,25 +165,31 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   }
 
   Future<void> _calcDiffs() async {
-    if (!listEquals(oldData, newData)) {
-      changes.clear();
+    if (!mounted) return;
 
-      await _differ?.cancel();
-      _differ = CancelableOperation.fromFuture(
+    if (!listEquals(_oldItems, _newItems)) {
+      _changes.clear();
+
+      await _diffOperation?.cancel();
+      _diffOperation = CancelableOperation.fromFuture(
         MyersDiff.withCallback<E>(this, spawnIsolate: widget.spawnIsolate),
       );
 
-      final diffs = await _differ.value;
+      final diffs = await _diffOperation.value;
       if (diffs == null) return;
 
       await _delegate.applyDiffs(diffs);
-      dataSet = List.from(newData);
-
-      setState(() {});
+      setState(() {
+        _data = List.from(_newItems);
+      });
 
       _updateAnimController
         ..reset()
         ..forward();
+    } else {
+      // Always update the list with the newest data,
+      // even if the lists have the same value equality.
+      _data = List.from(_newItems);
     }
   }
 
@@ -204,7 +214,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @protected
   @override
   void onRemoved(int index) {
-    final item = oldData[index];
+    final item = _oldItems[index];
 
     list.removeItem(index, (context, animation) {
       if (removeItemBuilder != null) {
@@ -222,7 +232,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     int i = 0;
     for (final item in itemsChanged) {
       final index = startIndex + i;
-      changes[item] = dataSet[index];
+      _changes[item] = data[index];
       i++;
     }
   }
@@ -239,7 +249,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
 
   @protected
   Widget buildUpdatedItemWidget(E newItem) {
-    final oldItem = changes[newItem];
+    final oldItem = _changes[newItem];
 
     return AnimatedBuilder(
       animation: _updateAnimation,

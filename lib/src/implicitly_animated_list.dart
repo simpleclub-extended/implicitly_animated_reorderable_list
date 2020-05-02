@@ -233,9 +233,9 @@ class _SliverImplicitlyAnimatedListState<E>
   Widget build(BuildContext context) {
     return SliverAnimatedList(
       key: animatedListKey,
-      initialItemCount: newData.length,
+      initialItemCount: newList.length,
       itemBuilder: (context, index, animation) {
-        final item = dataSet[index];
+        final item = data[index];
         final didChange = changes[item] != null;
 
         if (widget.updateItemBuilder != null && didChange) {

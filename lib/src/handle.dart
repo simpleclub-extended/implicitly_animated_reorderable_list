@@ -69,6 +69,10 @@ class _HandleState extends State<Handle> {
   void _onDragStarted(Offset pointer) {
     _removeScrollListener();
 
+    // If the list is already in drag we dont want to
+    // initiate a new reorder.
+    if (_list.inDrag) return;
+
     _inDrag = true;
     _initialOffset = _isVertical ? pointer.dy : pointer.dx;
 

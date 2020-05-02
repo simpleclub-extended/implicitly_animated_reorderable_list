@@ -1,7 +1,9 @@
 # Changelog
 
-# 0.2.0
+## 0.2.1
+- `ImplicitlyAnimatedList` now always uses the latest items, even if `listEquals()` is `true`.
 
+# 0.2.0
 - Added support for headers and footers on the `ImplicitlyAnimatedReorderableList`.
 - Added `child` property on `Reorderable` that can be used instead off the `builder` that will use a default elevation animation instead of being forced to specify your own custom animation.
 

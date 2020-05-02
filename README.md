@@ -13,7 +13,7 @@ Click [here](https://github.com/bnxm/implicitly_animated_reorderable_list/blob/m
 Add it to your `pubspec.yaml` file:
 ```yaml
 dependencies:
-  implicitly_animated_reorderable_list: ^0.2.0
+  implicitly_animated_reorderable_list: ^0.2.1
 ```
 Install packages from the command line
 ```
@@ -128,6 +128,19 @@ ImplicitlyAnimatedReorderableList<MyGenericType>(
       },
     );
   },
+  // Since version 0.2.0 you can also display a widget
+  // before the reorderable items...
+  header: Container(
+    height: 200,
+    color: Colors.red,
+  ),
+  // ...and after. Note that this feature - as the list itself - is still in beta!
+  footer: Container(
+    height: 200,
+    color: Colors.green,
+  ),
+  // If you want to use headers or footers, you should set shrinkWrap to true
+  shrinkWrap: true,
 );
 ```
 > For a more in depth example click [here](https://github.com/bnxm/implicitly_animated_reorderable_list/blob/master/example/lib/ui/lang_page.dart).
