@@ -11,7 +11,7 @@ class VerticalNestedExample extends StatefulWidget {
 }
 
 class VerticalNestedExampleState extends State<VerticalNestedExample> {
-  List<String> nestedList = List.generate(5, (i) => "$i");
+  List<String> nestedList = List.generate(20, (i) => "$i");
   bool nestedInReorder = false;
 
   @override
@@ -25,7 +25,6 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
       ),
       body: ImplicitlyAnimatedReorderableList<String>(
         shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
         items: nestedList,
         areItemsTheSame: (oldItem, newItem) => oldItem == newItem,
         onReorderFinished: (item, from, to, newList) {
@@ -35,7 +34,7 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
               ..addAll(newList);
           });
         },
-        /* header: Container(
+        header: Container(
           height: 120,
           color: Colors.red,
           child: Center(
@@ -54,7 +53,7 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
               style: textTheme.headline6.copyWith(color: Colors.white),
             ),
           ),
-        ), */
+        ),
         itemBuilder: (context, itemAnimation, item, index) {
           return Reorderable(
             key: ValueKey(item),
