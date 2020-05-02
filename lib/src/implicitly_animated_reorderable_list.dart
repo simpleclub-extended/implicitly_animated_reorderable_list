@@ -115,7 +115,27 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// Creates a Flutter ListView that implicitly animates between the changes of two lists with
   /// the support to reorder its items.
   ///
-  /// {@macro implicilty_animated_list.constructor}
+  /// The [items] parameter represents the current items that should be displayed in
+  /// the list.
+  ///
+  /// The [itemBuilder] callback is used to build each child as needed. The parent must
+  /// be a [Reorderable] widget.
+  ///
+  /// The [areItemsTheSame] callback is called by the DiffUtil to decide whether two object
+  /// represent the same Item. For example, if your items have unique ids, this method should
+  /// check their id equality.
+  ///
+  /// The [onReorderFinished] callback is called in response to when the dragged item has
+  /// been released and animated to its final destination. Here you should update
+  /// the underlying data in your model/bloc/database etc.
+  ///
+  /// This parameter should not be null.
+  /// The [spawnIsolate] flag indicates whether to spawn a new isolate on which to
+  /// calculate the diff between the lists.
+  ///
+  /// Usually you wont have to specify this value as the MyersDiff implementation will
+  /// use its own metrics to decide, whether a new isolate has to be spawned or not for
+  /// optimal performance.
   const ImplicitlyAnimatedReorderableList({
     Key key,
     @required List<E> items,

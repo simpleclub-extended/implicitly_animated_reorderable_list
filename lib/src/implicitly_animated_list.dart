@@ -173,7 +173,7 @@ class ImplicitlyAnimatedList<E> extends StatelessWidget {
 class SliverImplicitlyAnimatedList<E> extends ImplicitlyAnimatedListBase<Widget, E> {
   /// Creates a Flutter Sliver that implicitly animates between the changes of two lists.
   /// 
-  /// {@template implicilty_animated_list.constructor}
+  /// {@template implicitly_animated_reorderable_list.constructor}
   /// The [items] parameter represents the current items that should be displayed in
   /// the list.
   ///
