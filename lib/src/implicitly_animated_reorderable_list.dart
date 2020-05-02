@@ -97,9 +97,19 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   final ReorderFinishedCallback<E> onReorderFinished;
 
   /// A non-reorderable widget displayed at the top.
+  ///
+  /// This can be useful if you want to show content before
+  /// the reorderable items without needing to nest the
+  /// list in another `Scrollable` and thereby loose out
+  /// on performance and autoscrolling.
   final Widget header;
 
   /// A non-reorderable widget displayed at the bottom.
+  ///
+  /// This can be useful if you want to show content after
+  /// the reorderable items without needing to nest the
+  /// list in another `Scrollable` and thereby loose out
+  /// on performance and autoscrolling.
   final Widget footer;
 
   /// Creates a Flutter ListView that implicitly animates between the changes of two lists with
@@ -201,7 +211,7 @@ class ImplicitlyAnimatedReorderableListState<E>
   int get _dragIndex => dragItem?.index;
   double get _dragStart => dragItem.start + _dragDelta;
   double get _dragEnd => dragItem.end + _dragDelta;
-  double get _dragCenter => dragItem.middle + _dragDelta;
+  // double get _dragCenter => dragItem.middle + _dragDelta;
   double get _dragSize => isVertical ? dragItem.height : dragItem.width;
 
   final ValueNotifier<double> _dragDeltaNotifier = ValueNotifier(0.0);
@@ -327,9 +337,6 @@ class ImplicitlyAnimatedReorderableListState<E>
       }
     } else {
       if (_dragEnd >= center && !isShifted) {
-        if (_next.distance > dragItem.start && !_canScroll) {
-          return;
-        }
         _dispatchMove(key, -_dragSize);
       } else if (_dragEnd < center && isShifted) {
         _dispatchMove(key, 0);

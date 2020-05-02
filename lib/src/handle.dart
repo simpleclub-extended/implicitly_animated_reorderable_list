@@ -140,6 +140,7 @@ class _HandleState extends State<Handle> {
     _scrollable = Scrollable.of(_list.context);
 
     return Listener(
+      behavior: HitTestBehavior.translucent,
       onPointerDown: (event) {
         final pointer = event.localPosition;
 

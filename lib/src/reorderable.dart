@@ -24,15 +24,16 @@ class Reorderable extends StatefulWidget {
   /// Creates a reorderable widget that must be the parent of every
   /// item in an [ImplicitlyAnimatedReorderableList].
   ///
-  /// Either [builder] or [child] must not be null. The [builder]
-  /// can be used, for custom animations when the item should be animated
-  /// between dragged and normal state.
+  /// A [key] must be specified that uniquely identifies this Reorderable
+  /// in the list. The value of the key should not change throughout
+  /// the lifecycle of the item.
   ///
-  /// When [child] is non-null, the default elevation animation will be
-  /// used instead.
+  /// Either [builder] or [child] must be specified. The [builder]
+  /// can be used for custom animations when the item should be animated
+  /// between dragged and normal state. If you don't want to show any
+  /// animation between dragged and normal state, you can also use the
+  /// [child] as a shorthand instead.
   const Reorderable({
-    /// A unique key that identifies this Reorderable. The value of the key should
-    /// not change throughout the lifecycle of the item.
     @required Key key,
     this.builder,
     this.child,

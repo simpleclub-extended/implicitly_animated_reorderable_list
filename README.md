@@ -145,6 +145,7 @@ If you want to contribute your own custom transitions, feel free to make a pull 
 ### Caveats
 
 Note that this package is still in its very early phase and not enough testing has been done to guarantee stability.  
+
 Also note that computing the diff between two very large lists may take a significant amount of time (the computation is done on a background isolate though unless `spawnIsolate` is set to `false`).
 
 ### Acknowledgements
