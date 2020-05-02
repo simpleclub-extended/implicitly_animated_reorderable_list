@@ -7,7 +7,7 @@ import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorder
 import 'package:implicitly_animated_reorderable_list/transitions.dart';
 
 import '../util/util.dart';
-import 'search_page.dart';
+import 'ui.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({
@@ -18,10 +18,11 @@ class LanguagePage extends StatefulWidget {
   _LanguagePageState createState() => _LanguagePageState();
 }
 
-class _LanguagePageState extends State<LanguagePage> {
+class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderStateMixin {
   static const double _horizontalHeight = 96;
   static const List<String> options = [
     'Shuffle',
+    'Nested example',
   ];
 
   final List<Language> selectedLanguages = [
@@ -32,12 +33,15 @@ class _LanguagePageState extends State<LanguagePage> {
   ];
 
   bool inReorder = false;
+
+  TabController tabController;
   ScrollController scrollController;
 
   @override
   void initState() {
     super.initState();
     scrollController = ScrollController();
+    tabController = TabController(initialIndex: 0, length: 3, vsync: this);
   }
 
   void onReorderFinished(List<Language> newItems) {
@@ -58,7 +62,7 @@ class _LanguagePageState extends State<LanguagePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Languages Demo'),
+        title: const Text('Examples'),
         backgroundColor: theme.accentColor,
         actions: <Widget>[
           _buildPopupMenuButton(textTheme),
@@ -74,7 +78,6 @@ class _LanguagePageState extends State<LanguagePage> {
           _buildHeadline('Vertically'),
           const Divider(height: 0),
           _buildVerticalLanguageList(),
-          _buildFooter(context, textTheme),
           _buildHeadline('Horizontally'),
           _buildHorizontalLanguageList(),
           const SizedBox(height: 500),
@@ -85,7 +88,37 @@ class _LanguagePageState extends State<LanguagePage> {
 
   // * An example of a vertically reorderable list.
   Widget _buildVerticalLanguageList() {
+    final theme = Theme.of(context);
     const listPadding = EdgeInsets.symmetric(horizontal: 0);
+
+    Widget buildReorderable(
+      Language lang,
+      Widget Function(Widget tile) transitionBuilder,
+    ) {
+      return Reorderable(
+        key: ValueKey(lang),
+        builder: (context, dragAnimation, inDrag) {
+          final t = dragAnimation.value;
+          final tile = _buildTile(t, lang);
+
+          // If the item is in drag, only return the tile as the
+          // SizeFadeTransition would clip the shadow.
+          if (t > 0.0) {
+            return tile;
+          }
+
+          return transitionBuilder(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                tile,
+                const Divider(height: 0),
+              ],
+            ),
+          );
+        },
+      );
+    }
 
     return ImplicitlyAnimatedReorderableList<Language>(
       items: selectedLanguages,
@@ -98,51 +131,24 @@ class _LanguagePageState extends State<LanguagePage> {
         onReorderFinished(newItems);
       },
       itemBuilder: (context, itemAnimation, lang, index) {
-        return Reorderable(
-          key: ValueKey(lang),
-          builder: (context, dragAnimation, inDrag) {
-            final t = dragAnimation.value;
-            final tile = _buildTile(t, lang);
-
-            // If the item is in drag, only return the tile as the
-            // SizeFadeTransition would clip the shadow.
-            if (t > 0.0) {
-              return tile;
-            }
-
-            // Specifiy an animation to be used.
-            return SizeFadeTransition(
-              sizeFraction: 0.7,
-              curve: Curves.easeInOut,
-              animation: itemAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  tile,
-                  const Divider(height: 0),
-                ],
-              ),
-            );
-          },
-        );
+        return buildReorderable(lang, (tile) {
+          return SizeFadeTransition(
+            sizeFraction: 0.7,
+            curve: Curves.easeInOut,
+            animation: itemAnimation,
+            child: tile,
+          );
+        });
       },
       updateItemBuilder: (context, itemAnimation, lang) {
-        return Reorderable(
-          key: ValueKey(lang),
-          builder: (context, dragAnimation, inDrag) {
-            return FadeTransition(
-              opacity: itemAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  _buildTile(0.0, lang),
-                  const Divider(height: 0),
-                ],
-              ),
-            );
-          },
-        );
+        return buildReorderable(lang, (tile) {
+          return FadeTransition(
+            opacity: itemAnimation,
+            child: tile,
+          );
+        });
       },
+      footer: _buildFooter(context, theme.textTheme),
     );
   }
 
@@ -179,12 +185,10 @@ class _LanguagePageState extends State<LanguagePage> {
         updateItemBuilder: (context, itemAnimation, item) {
           return Reorderable(
             key: ValueKey(item.toString()),
-            builder: (context, dragAnimation, inDrag) {
-              return FadeTransition(
-                opacity: itemAnimation,
-                child: _buildBox(item, 0),
-              );
-            },
+            child: FadeTransition(
+              opacity: itemAnimation,
+              child: _buildBox(item, 0),
+            ),
           );
         },
       ),
@@ -219,7 +223,7 @@ class _LanguagePageState extends State<LanguagePage> {
                     const SizedBox(height: 4),
                     Text(
                       'Delete',
-                      style: textTheme.bodyText1.copyWith(
+                      style: textTheme.bodyText2.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -241,13 +245,13 @@ class _LanguagePageState extends State<LanguagePage> {
         child: ListTile(
           title: Text(
             lang.nativeName,
-            style: textTheme.bodyText1.copyWith(
+            style: textTheme.bodyText2.copyWith(
               fontSize: 16,
             ),
           ),
           subtitle: Text(
             lang.englishName,
-            style: textTheme.bodyText2.copyWith(
+            style: textTheme.bodyText1.copyWith(
               fontSize: 15,
             ),
           ),
@@ -257,7 +261,7 @@ class _LanguagePageState extends State<LanguagePage> {
             child: Center(
               child: Text(
                 '${selectedLanguages.indexOf(lang) + 1}',
-                style: textTheme.bodyText1.copyWith(
+                style: textTheme.bodyText2.copyWith(
                   color: theme.accentColor,
                   fontSize: 16,
                 ),
@@ -301,12 +305,12 @@ class _LanguagePageState extends State<LanguagePage> {
             children: <Widget>[
               Text(
                 item.nativeName,
-                style: textTheme.bodyText1,
+                style: textTheme.bodyText2,
               ),
               const SizedBox(height: 8),
               Text(
                 item.englishName,
-                style: textTheme.bodyText2,
+                style: textTheme.bodyText1,
               ),
             ],
           ),
@@ -348,7 +352,7 @@ class _LanguagePageState extends State<LanguagePage> {
             ),
             title: Text(
               'Add a language',
-              style: textTheme.bodyText2.copyWith(
+              style: textTheme.bodyText1.copyWith(
                 fontSize: 16,
               ),
             ),
@@ -378,7 +382,7 @@ class _LanguagePageState extends State<LanguagePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
             headline,
-            style: textTheme.bodyText2.copyWith(
+            style: textTheme.bodyText1.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -400,6 +404,14 @@ class _LanguagePageState extends State<LanguagePage> {
           case 'Shuffle':
             setState(selectedLanguages.shuffle);
             break;
+          case 'Nested example':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const VerticalNestedExample(),
+              ),
+            );
+            break;
         }
       },
       itemBuilder: (context) => options.map((option) {
@@ -407,7 +419,7 @@ class _LanguagePageState extends State<LanguagePage> {
           value: option,
           child: Text(
             option,
-            style: textTheme.bodyText2,
+            style: textTheme.bodyText1,
           ),
         );
       }).toList(),

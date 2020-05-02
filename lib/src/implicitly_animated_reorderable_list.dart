@@ -10,6 +10,8 @@ typedef ReorderStartedCallback<E> = void Function(E item, int index);
 
 typedef ReorderFinishedCallback<E> = void Function(E item, int from, int to, List<E> newItems);
 
+/// A Flutter ListView that implicitly animates between the changes of two lists with
+/// the support to reorder its items.
 class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Reorderable, E> {
   /// Whether the scroll view scrolls in the reading direction.
   ///
@@ -88,9 +90,32 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
   /// `from` index `to` index. The `data` parameter represents the new data with
   /// the item already being correctly reordered.
   ///
+  /// Note that this will also be called when the item didn't change its index in
+  /// the list (i.e. the user canceled the reorder).
+  ///
   /// This parameter should not be null.
   final ReorderFinishedCallback<E> onReorderFinished;
 
+  /// A non-reorderable widget displayed at the top.
+  ///
+  /// This can be useful if you want to show content before
+  /// the reorderable items without needing to nest the
+  /// list in another `Scrollable` and thereby loose out
+  /// on performance and autoscrolling.
+  final Widget header;
+
+  /// A non-reorderable widget displayed at the bottom.
+  ///
+  /// This can be useful if you want to show content after
+  /// the reorderable items without needing to nest the
+  /// list in another `Scrollable` and thereby loose out
+  /// on performance and autoscrolling.
+  final Widget footer;
+
+  /// Creates a Flutter ListView that implicitly animates between the changes of two lists with
+  /// the support to reorder its items.
+  ///
+  /// {@macro implicilty_animated_list.constructor}
   const ImplicitlyAnimatedReorderableList({
     Key key,
     @required List<E> items,
@@ -102,16 +127,18 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
     Duration removeDuration = const Duration(milliseconds: 500),
     Duration updateDuration = const Duration(milliseconds: 500),
     bool spawnIsolate,
-    @required this.onReorderFinished,
-    this.onReorderStarted,
-    this.dragDuration = const Duration(milliseconds: 300),
-    this.scrollDirection = Axis.vertical,
     this.reverse = false,
+    this.scrollDirection = Axis.vertical,
     this.controller,
     this.primary,
     this.physics,
     this.shrinkWrap = false,
     this.padding,
+    this.dragDuration = const Duration(milliseconds: 300),
+    this.onReorderStarted,
+    @required this.onReorderFinished,
+    this.header,
+    this.footer,
   })  : assert(onReorderFinished != null),
         assert(
           dragDuration <= const Duration(milliseconds: 1500),
@@ -140,7 +167,21 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
 
 class ImplicitlyAnimatedReorderableListState<E>
     extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
-  GlobalKey _dragKey;
+  // The key of the custom scroll view.
+  final GlobalKey _listKey = GlobalKey(debugLabel: 'list_key');
+  // The key of the draggedItem.
+  final GlobalKey _dragKey = GlobalKey(debugLabel: 'drag_key');
+
+  // The key of the header.
+  final GlobalKey _headerKey = GlobalKey(debugLabel: 'header_key');
+  bool get hasHeader => widget.header != null;
+  double _headerHeight = 0.0;
+
+  // The key of the footer.
+  final GlobalKey _footerKey = GlobalKey(debugLabel: 'footer_key');
+  bool get hasFooter => widget.footer != null;
+  double _footerHeight = 0.0;
+
   Timer _scrollAdjuster;
 
   ScrollController _controller;
@@ -153,10 +194,10 @@ class ImplicitlyAnimatedReorderableListState<E>
   bool get isVertical => widget.scrollDirection != Axis.horizontal;
 
   double _listSize = 0;
-  double get scrollOffset => _controller.offset;
-  double get _maxScrollOffset => _controller.position.maxScrollExtent;
+  double get scrollOffset => _canScroll ? _controller.offset : 0.0;
+  double get _maxScrollOffset => _controller?.position?.maxScrollExtent ?? 0.0;
   double get _scrollDelta => scrollOffset - _dragStartScrollOffset;
-  bool get _canScroll => _maxScrollOffset > 0;
+  bool get _canScroll => _maxScrollOffset > 0.0;
 
   bool _motionUp = false;
   bool get _up => _dragDelta.isNegative;
@@ -167,11 +208,11 @@ class ImplicitlyAnimatedReorderableListState<E>
   double _dragStartOffset;
   double _dragStartScrollOffset;
   Key get dragKey => dragItem?.key;
-  int get dragIndex => dragItem?.index;
-  double get dragStart => dragItem.start + _dragDelta;
-  double get dragEnd => dragItem.end + _dragDelta;
-  double get dragCenter => dragItem.middle + _dragDelta;
-  double get dragSize => isVertical ? dragItem.height : dragItem.width;
+  int get _dragIndex => dragItem?.index;
+  double get _dragStart => dragItem.start + _dragDelta;
+  double get _dragEnd => dragItem.end + _dragDelta;
+  // double get _dragCenter => dragItem.middle + _dragDelta;
+  double get _dragSize => isVertical ? dragItem.height : dragItem.width;
 
   final ValueNotifier<double> _dragDeltaNotifier = ValueNotifier(0.0);
   double get _dragDelta => _dragDeltaNotifier.value;
@@ -185,14 +226,12 @@ class ImplicitlyAnimatedReorderableListState<E>
   final Map<Key, AnimationController> _itemTranslations = {};
   final Map<Key, _Item> _itemBoxes = {};
 
-  _Item get closest => _closestList.firstOrNull;
+  _Item get _next => _closestList.firstOrNull;
   final List<_Item> _closestList = [];
 
   @override
   void initState() {
     super.initState();
-    _dragKey = GlobalKey();
-
     // The list must have a ScrollController in order to adjust the
     // scroll position when the user drags an item outside the
     // current viewport.
@@ -216,7 +255,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     _measureChild(key);
     dragItem = _itemBoxes[key];
 
-    if (dragIndex != null) {
+    if (_dragIndex != null) {
       final offset = _itemOffset(key);
       _dragStartOffset = isVertical ? offset.dy : offset.dx;
       _dragStartScrollOffset = scrollOffset;
@@ -224,7 +263,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
       setState(() => _inDrag = true);
 
-      widget.onReorderStarted?.call(dataSet[dragIndex], dragIndex);
+      widget.onReorderStarted?.call(dataSet[_dragIndex], _dragIndex);
 
       _adjustScrollPositionWhenNecessary();
     }
@@ -239,21 +278,26 @@ class ImplicitlyAnimatedReorderableListState<E>
 
     // Allow the dragged item to be overscrolled to allow for
     // continous scrolling while in drag.
-    final overscrollBound = _canScroll ? dragSize : 0;
+    final overscrollBound = _canScroll && !(hasHeader || hasFooter) ? _dragSize : 0;
     // Constrain the dragged item to the bounds of the list.
-    final currentDelta = (_up ? dragItem.start : dragItem.end) + delta;
-    final minDelta = -(dragItem.start + overscrollBound);
-    final maxDelta = (_maxScrollOffset + _listSize) + overscrollBound;
-    if (currentDelta < minDelta || currentDelta > maxDelta) {
-      return;
-    }
+    final minDelta = (_headerHeight - (dragItem.start + overscrollBound)) - _scrollDelta;
+    final maxDelta =
+        ((_maxScrollOffset + _listSize + overscrollBound) - (dragItem.bottom + _footerHeight)) - _scrollDelta;
 
     _pointerDelta = delta.clamp(minDelta, maxDelta);
     _dragDelta = _pointerDelta + _scrollDelta;
 
+    if (delta < minDelta || delta > maxDelta) {
+      return;
+    }
+
+    /* print('c $delta');
+    print('min ${scrollOffset}');
+    print('max $maxDelta'); */
+
     _findClosestItem();
 
-    if (closest == null || closest.key == dragKey) return;
+    if (_next == null || _next.key == dragKey) return;
 
     _translateNextItem();
     _adjustPreviousItemTranslations();
@@ -261,39 +305,40 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void _findClosestItem() {
     _closestList.clear();
+
     for (final item in _itemBoxes.values) {
       if (item == dragItem) {
         item.distance = _pointerDelta.abs();
         _closestList.add(item);
       } else {
         final position = isVertical ? item.center.dy : item.center.dx;
-        if ((_motionUp && dragStart < position) || (!_motionUp && dragEnd > position)) {
-          item.distance = ((_up ? dragStart : dragEnd) - position).abs();
+        if ((_motionUp && _dragStart < position) || (!_motionUp && _dragEnd > position)) {
+          item.distance = ((_up ? _dragStart : _dragEnd) - position).abs();
           _closestList.add(item);
         }
       }
     }
+
     _closestList.sort();
   }
 
   void _translateNextItem() {
-    final key = closest.key;
+    final key = _next.key;
     final translation = getTranslation(key);
-    final center = closest.middle;
+    final center = _next.middle;
+
+    final isShifted = translation != 0.0;
 
     if (_up) {
-      if (dragStart < center && translation == 0.0) {
-        _dispatchMove(key, dragSize);
-      } else if (dragStart > center && translation != 0.0) {
+      if (_dragStart <= center && !isShifted) {
+        _dispatchMove(key, _dragSize);
+      } else if (_dragStart > center && isShifted) {
         _dispatchMove(key, 0);
       }
     } else {
-      if (dragEnd > center && translation == 0.0) {
-        if (closest.distance > dragItem.start && !_canScroll) {
-          return;
-        }
-        _dispatchMove(key, -dragSize);
-      } else if (dragEnd < center && translation != 0.0) {
+      if (_dragEnd >= center && !isShifted) {
+        _dispatchMove(key, -_dragSize);
+      } else if (_dragEnd < center && isShifted) {
         _dispatchMove(key, 0);
       }
     }
@@ -301,7 +346,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void _adjustPreviousItemTranslations() {
     for (final item in _itemBoxes.values) {
-      if (item == dragItem || item == closest) continue;
+      if (item == dragItem || item == _next) continue;
 
       final key = item.key;
       if (_itemTranslations[key]?.isAnimating == true) continue;
@@ -309,17 +354,17 @@ class ImplicitlyAnimatedReorderableListState<E>
       final translation = getTranslation(key);
 
       final index = item.index;
-      final closestIndex = closest.index;
+      final closestIndex = _next.index;
 
-      if (index > dragIndex) {
+      if (index > _dragIndex) {
         if (translation == 0.0 && index < closestIndex) {
-          _dispatchMove(key, -dragSize);
+          _dispatchMove(key, -_dragSize);
         } else if (translation != 0.0 && index > closestIndex) {
           _dispatchMove(key, 0);
         }
-      } else if (index < dragIndex) {
+      } else if (index < _dragIndex) {
         if (translation == 0.0 && index > closestIndex) {
-          _dispatchMove(key, dragSize);
+          _dispatchMove(key, _dragSize);
         } else if (translation != 0.0 && index < closestIndex) {
           _dispatchMove(key, 0);
         }
@@ -368,16 +413,24 @@ class ImplicitlyAnimatedReorderableListState<E>
   }
 
   void _adjustScrollPositionWhenNecessary() {
+    if (!_canScroll) return;
+
     _scrollAdjuster?.cancel();
     _scrollAdjuster = Timer.periodic(const Duration(milliseconds: 16), (_) {
-      if ((_up && scrollOffset <= 0) || (!_up && scrollOffset >= _maxScrollOffset)) return;
+      final start = _headerHeight;
+      final end = _maxScrollOffset - _footerHeight;
+      final isAtStart = _up && scrollOffset < start;
+      final isAtEnd = !_up && scrollOffset > end;
+      if (isAtStart || isAtEnd) {
+        return;
+      }
 
       final dragBox = _dragKey?.renderBox;
       if (dragBox == null) return;
 
       final dragOffset = dragBox.localToGlobal(Offset.zero, ancestor: context.renderBox);
       final dragItemStart = isVertical ? dragOffset.dy : dragOffset.dx;
-      final dragItemEnd = dragItemStart + dragSize;
+      final dragItemEnd = dragItemStart + _dragSize;
 
       double delta;
       if (dragItemStart <= 0) {
@@ -388,13 +441,17 @@ class ImplicitlyAnimatedReorderableListState<E>
 
       if (delta != null) {
         final atLowerBound = dragItemStart <= 0;
-        delta = (delta.abs() / dragSize).clamp(0.1, 1.0);
+        delta = (delta.abs() / _dragSize).clamp(0.1, 1.0);
 
         const maxSpeed = 20;
         final max = atLowerBound ? -maxSpeed : maxSpeed;
-        final scrollDelta = max * delta;
+        var newOffset = scrollOffset + (max * delta);
 
-        _controller.jumpTo(scrollOffset + scrollDelta);
+        if (!(scrollOffset < start) && !(scrollOffset > end)) {
+          newOffset = newOffset.clamp(start, end);
+        }
+
+        _controller.jumpTo(newOffset);
         onDragUpdated(_pointerDelta);
       }
     });
@@ -403,19 +460,23 @@ class ImplicitlyAnimatedReorderableListState<E>
   void onDragEnded() {
     if (dragKey == null || _closestList.isEmpty) return;
 
-    if (getTranslation(closest.key) == 0.0) {
-      _dispatchMove(closest.key, _up ? dragSize : -dragSize);
+    if (getTranslation(_next.key) == 0.0) {
+      _dispatchMove(_next.key, _up ? _dragSize : -_dragSize);
     }
 
     _onDragEnd = () {
-      if (dragIndex != null) {
-        final toIndex = _itemBoxes[closest.key].index;
-        final item = dataSet.removeAt(dragIndex);
+      if (_dragIndex != null) {
+        if (!_itemBoxes.containsKey(_next.key)) {
+          _measureChild(_next.key);
+        }
+
+        final toIndex = _itemBoxes[_next.key].index;
+        final item = dataSet.removeAt(_dragIndex);
         dataSet.insert(toIndex, item);
 
         widget.onReorderFinished?.call(
           item,
-          dragIndex,
+          _dragIndex,
           toIndex,
           List<E>.from(dataSet),
         );
@@ -424,7 +485,7 @@ class ImplicitlyAnimatedReorderableListState<E>
       _cancelDrag();
     };
 
-    final delta = closest != dragItem ? closest.start - dragStart : -_pointerDelta;
+    final delta = _next != dragItem ? _next.start - _dragStart : -_pointerDelta;
 
     _dispatchMove(
       dragKey,
@@ -485,10 +546,16 @@ class ImplicitlyAnimatedReorderableListState<E>
     final needsRebuild = _listSize == 0 || inDrag != _prevInDrag;
     _prevInDrag = inDrag;
 
-    postFrame(() {
-      _listSize = isVertical ? listKey.height : listKey.width;
+    double getSizeOfKey(GlobalKey key) => (isVertical ? key?.height : key?.width) ?? 0.0;
 
-      if (needsRebuild) setState(() {});
+    postFrame(() {
+      _listSize = getSizeOfKey(_listKey);
+      _headerHeight = hasHeader ? getSizeOfKey(_headerKey) : 0.0;
+      _footerHeight = hasFooter ? getSizeOfKey(_footerKey) : 0.0;
+
+      if (needsRebuild && mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -509,50 +576,73 @@ class ImplicitlyAnimatedReorderableListState<E>
   Widget build(BuildContext context) {
     _onRebuild();
 
-    return Stack(
-      fit: StackFit.passthrough,
-      children: <Widget>[
-        AnimatedList(
-          key: listKey,
-          itemBuilder: (context, index, animation) {
-            final item = dataSet[index];
+    final scrollView = CustomScrollView(
+      key: _listKey,
+      controller: _controller,
+      scrollDirection: widget.scrollDirection,
+      physics: inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
+      primary: widget.primary,
+      reverse: widget.reverse,
+      shrinkWrap: widget.shrinkWrap,
+      slivers: <Widget>[
+        if (hasHeader)
+          SliverToBoxAdapter(
+            child: Container(
+              key: _headerKey,
+              child: widget.header,
+            ),
+          ),
+        SliverPadding(
+          padding: widget.padding ?? EdgeInsets.zero,
+          sliver: SliverAnimatedList(
+            // * Assign the animation key to the sliver *
+            key: animatedListKey,
+            initialItemCount: newData.length,
+            itemBuilder: (context, index, animation) {
+              final item = dataSet[index];
 
-            final Reorderable child = buildItem(context, animation, item, index);
-            postFrame(() => _measureChild(child.key, index));
+              final Reorderable child = buildItem(context, animation, item, index);
+              postFrame(() => _measureChild(child.key, index));
 
-            if (dragKey != null && index == dragIndex) {
-              final size = dragItem?.size;
-              // Determine if the dragged widget should be hidden
-              // immidiately, or with on frame delay in order to
-              // avoid item flash.
-              final mustRebuild = _dragWidget == null;
+              if (dragKey != null && index == _dragIndex) {
+                final size = dragItem?.size;
+                // Determine if the dragged widget should be hidden
+                // immidiately, or with on frame delay in order to
+                // avoid item flash.
+                final mustRebuild = _dragWidget == null;
 
-              _dragWidget = child;
-              if (mustRebuild) postFrame(() => setState(() {}));
+                _dragWidget = child;
+                if (mustRebuild) postFrame(() => setState(() {}));
 
-              // The placeholder of the dragged item.
-              //
-              // Make sure not to use the actual widget but only its size
-              // when they have been determined, as a widget is only allowed
-              // to be laid out once.
-              return Invisible(
-                invisible: !mustRebuild,
-                child: mustRebuild ? child : SizedBox.fromSize(size: size),
-              );
-            }
+                // The placeholder of the dragged item.
+                //
+                // Make sure not to use the actual widget but only its size
+                // when they have been determined, as a widget is only allowed
+                // to be laid out once.
+                return Invisible(
+                  invisible: !mustRebuild,
+                  child: mustRebuild ? child : SizedBox.fromSize(size: size),
+                );
+              }
 
-            return child;
-          },
-          controller: _controller,
-          scrollDirection: widget.scrollDirection,
-          initialItemCount: newData.length,
-          physics: inDrag ? const NeverScrollableScrollPhysics() : widget.physics,
-          padding: widget.padding,
-          primary: widget.primary,
-          reverse: widget.reverse,
-          shrinkWrap: widget.shrinkWrap,
+              return child;
+            },
+          ),
         ),
-        if (_dragWidget != null) _buildDraggedItem()
+        if (hasFooter)
+          SliverToBoxAdapter(
+            child: Container(
+              key: _footerKey,
+              child: widget.footer,
+            ),
+          ),
+      ],
+    );
+
+    return Stack(
+      children: <Widget>[
+        scrollView,
+        if (_dragWidget != null) _buildDraggedItem(),
       ],
     );
   }

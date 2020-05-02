@@ -1,5 +1,10 @@
 # Changelog
 
+# 0.2.0
+
+- Added support for headers and footers on the `ImplicitlyAnimatedReorderableList`.
+- Added `child` property on `Reorderable` that can be used instead off the `builder` that will use a default elevation animation instead of being forced to specify your own custom animation.
+
 ## 0.1.5 to 0.1.10
 - Bug fixes and performance improvements.
 

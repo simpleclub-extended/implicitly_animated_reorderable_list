@@ -80,11 +80,11 @@ abstract class ImplicitlyAnimatedListBase<W extends Widget, E> extends StatefulW
 abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends ImplicitlyAnimatedListBase<W, E>, E>
     extends State<B> with DiffCallback<E>, TickerProviderStateMixin {
   @protected
-  GlobalKey listKey;
+  GlobalKey<SliverAnimatedListState> animatedListKey;
 
   @nonVirtual
   @protected
-  dynamic get list => listKey.currentState;
+  dynamic get list => animatedListKey.currentState;
 
   DiffDelegate _delegate;
   CancelableOperation _differ;
@@ -128,7 +128,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @override
   void initState() {
     super.initState();
-    listKey = GlobalKey();
+    animatedListKey = GlobalKey();
     dataSet = List<E>.from(widget.items);
     _delegate = DiffDelegate(this);
 
