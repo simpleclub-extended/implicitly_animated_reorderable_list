@@ -154,9 +154,7 @@ class _HandleState extends State<Handle> {
           _addScrollListener();
           _handler = postDuration(
             widget.delay,
-            () {
-              _onDragStarted(pointer);
-            },
+            () => _onDragStarted(pointer),
           );
         }
       },
