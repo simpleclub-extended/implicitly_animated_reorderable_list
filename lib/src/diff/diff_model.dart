@@ -7,7 +7,7 @@ abstract class Diff implements Comparable<Diff> {
   );
 
   @override
-  String toString() => '${runtimeType.toString()} index: $index, size: $size';
+  String toString() => '${runtimeType.toString()}(index: $index, size: $size)';
 
   @override
   int compareTo(Diff other) => index - other.index;
@@ -36,4 +36,9 @@ class Modification<E> extends Diff {
     int size,
     this.items,
   ) : super(index, size);
+
+  @override
+  String toString() {
+    return '${runtimeType.toString()}(index: $index, size: $size, items: $items)';
+  }
 }
