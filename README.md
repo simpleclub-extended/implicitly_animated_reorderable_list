@@ -54,7 +54,7 @@ ImplicitlyAnimatedList<MyGenericType>(
   // An optional builder when an item was removed from the list.
   // If not specified, the List uses the itemBuilder with 
   // the animation reversed.
-  removedItemBuilder: (context, animation, oldItem) {
+  removeItemBuilder: (context, animation, oldItem) {
     return FadeTransition(
       opacity: animation,
       child: Text(oldItem.name),
