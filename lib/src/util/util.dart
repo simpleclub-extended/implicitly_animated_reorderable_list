@@ -6,16 +6,21 @@ export 'handler.dart';
 export 'invisible.dart';
 export 'key_extensions.dart';
 
-void ifTrue(bool condition, Function callback) {
-  if (condition) callback();
-}
-
 void postFrame(VoidCallback callback) => WidgetsBinding.instance.addPostFrameCallback((_) => callback());
 
 extension ListExtension<E> on List<E> {
-  E getOrNull(int index) => index < length ? this[index] : null;
+  E getOrNull(int index) {
+    try {
+      return this[index];
+      // ignore: avoid_catching_errors
+    } on Error {
+      return null;
+    } on Exception {
+      return null;
+    }
+  }
 
-  E get firstOrNull => isNotEmpty ? first : null; 
+  E get firstOrNull => isNotEmpty ? first : null;
 }
 
 extension NumExtension<T extends num> on T {

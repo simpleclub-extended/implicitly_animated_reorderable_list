@@ -8,7 +8,6 @@ import '../src.dart';
 class _DiffArguments<E> {
   final List<E> oldList;
   final List<E> newList;
-
   _DiffArguments(this.oldList, this.newList);
 }
 
@@ -36,7 +35,7 @@ class MyersDiff<E> {
     ItemDiffUtil<E> areItemsTheSame,
     bool spawnIsolate,
   }) {
-    eq = areItemsTheSame ?? (a, b) => a == b;
+    eq = (a, b) => areItemsTheSame?.call(a, b) ?? a == b;
     cq = (a, b) => false;
 
     final args = _DiffArguments<E>(oldList, newList);
@@ -107,9 +106,7 @@ PathNode _buildPath<E>(List<E> oldList, List<E> newList, ItemDiffUtil<E> equals)
       diagonal[kminus] = null;
 
       int j = i - k;
-
       PathNode node = DiffNode(i, j, prev);
-
       while (i < oldSize && j < newSize && equals(oldList[i], newList[j])) {
         i++;
         j++;

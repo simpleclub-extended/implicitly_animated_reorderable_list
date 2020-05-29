@@ -34,14 +34,12 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
 
   bool inReorder = false;
 
-  TabController tabController;
   ScrollController scrollController;
 
   @override
   void initState() {
     super.initState();
     scrollController = ScrollController();
-    tabController = TabController(initialIndex: 0, length: 3, vsync: this);
   }
 
   void onReorderFinished(List<Language> newItems) {
@@ -270,7 +268,7 @@ class _LanguagePageState extends State<LanguagePage> with SingleTickerProviderSt
             ),
           ),
           trailing: Handle(
-            delay: const Duration(milliseconds: 250),
+            delay: Duration(milliseconds: 100),
             child: Icon(
               Icons.drag_handle,
               color: Colors.grey,

@@ -148,6 +148,8 @@ class _HandleState extends State<Handle> {
       onPointerDown: (event) {
         final pointer = event.localPosition;
 
+        // Ensure the list is not already in a reordering
+        // state when initiating a new reorder operation.
         if (!_inDrag) {
           _cancelReorder();
 

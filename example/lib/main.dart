@@ -18,13 +18,6 @@ class MyApp extends StatelessWidget {
       title: 'Implicitly Animated Reorderable List Example',
       theme: ThemeData.light().copyWith(
         accentColor: Colors.amber.shade800,
-        tabBarTheme: TabBarTheme(
-          labelStyle: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-          ),
-        ),
         dividerTheme: DividerThemeData(
           thickness: 1,
           color: Colors.grey.shade300,

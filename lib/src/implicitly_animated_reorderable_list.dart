@@ -499,7 +499,7 @@ class ImplicitlyAnimatedReorderableListState<E>
         );
       }
 
-      _cancelDrag();
+      _cancelReorder();
     };
 
     final delta = _next != dragItem ? _next.start - _dragStart : -_pointerDelta;
@@ -519,7 +519,18 @@ class ImplicitlyAnimatedReorderableListState<E>
     setState(() => _inDrag = false);
   }
 
-  void _cancelDrag() {
+  @override
+  void onRemoved(int index) {
+    super.onRemoved(index);
+
+    // When the item that is being reordered is removed,
+    // cancel the reorder operation.
+    if (index == _dragIndex) {
+      _cancelReorder();
+    }
+  }
+
+  void _cancelReorder() {
     setState(() {
       dragItem = null;
       _onDragEnd = null;

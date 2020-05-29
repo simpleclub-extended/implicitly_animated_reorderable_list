@@ -203,18 +203,19 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @override
   bool areItemsTheSame(E oldItem, E newItem) => widget.areItemsTheSame(oldItem, newItem);
 
-  @nonVirtual
+  @mustCallSuper
   @protected
   @override
   void onInserted(int index, E item) {
     list.insertItem(index, duration: widget.insertDuration);
   }
 
-  @nonVirtual
+  @mustCallSuper
   @protected
   @override
   void onRemoved(int index) {
-    final item = _oldItems[index];
+    final item = oldList.getOrNull(index);
+    assert(item != null);
 
     list.removeItem(index, (context, animation) {
       if (removeItemBuilder != null) {
@@ -225,7 +226,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
     }, duration: widget.removeDuration);
   }
 
-  @nonVirtual
+  @mustCallSuper
   @protected
   @override
   void onChanged(int startIndex, List<E> itemsChanged) {

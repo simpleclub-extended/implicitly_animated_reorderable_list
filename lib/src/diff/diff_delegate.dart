@@ -40,8 +40,8 @@ class DiffDelegate<E> {
   }
 
   void _applyDeletion(Deletion diff) {
-    for (int i = 0; i < diff.size; i++) {
-      _callback.onRemoved(diff.index);
+    for (int i = diff.size - 1; i >= 0; i--) {
+      _callback.onRemoved(diff.index + i);
     }
   }
 
