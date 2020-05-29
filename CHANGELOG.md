@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2
+- Fix #14
+
 ## 0.2.1
 - `ImplicitlyAnimatedList` now always uses the latest items, even if `listEquals()` is `true`.
 
