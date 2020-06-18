@@ -390,6 +390,8 @@ class ImplicitlyAnimatedReorderableListState<E>
       oldController
         ..stop()
         ..dispose();
+
+      _itemTranslations.remove(key);
     }
 
     final start = min(value, delta);
