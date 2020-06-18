@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
@@ -64,7 +63,7 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(item),
-                    Handle(
+                    const Handle(
                       child: Icon(Icons.menu),
                     ),
                   ],

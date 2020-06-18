@@ -383,15 +383,16 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void _dispatchMove(Key key, double delta, {VoidCallback onEnd}) {
     double value = 0.0;
-    final oldController = _itemTranslations[key];
+
+    // Remove and stop the old controller if there was one
+    // and start from the value where it left off.
+    final oldController = _itemTranslations.remove(key);
     if (oldController != null) {
       value = oldController.value;
 
       oldController
         ..stop()
         ..dispose();
-
-      _itemTranslations.remove(key);
     }
 
     final start = min(value, delta);
