@@ -202,8 +202,14 @@ class ImplicitlyAnimatedReorderableListState<E>
   bool _motionUp = false;
   bool get _up => _dragDelta.isNegative;
 
+  // Whether there is an item in the list that is currently being
+  // dragged/reordered.
   bool _inDrag = false;
   bool get inDrag => _inDrag;
+  // Whether there is an item in the list that is currently being
+  // reordered or moving towards its destination position.
+  bool _inReorder = false;
+  bool get inReorder => _inReorder;
 
   double _dragStartOffset;
   double _dragStartScrollOffset;
@@ -261,7 +267,10 @@ class ImplicitlyAnimatedReorderableListState<E>
       _dragStartScrollOffset = scrollOffset;
       _findClosestItem();
 
-      setState(() => _inDrag = true);
+      setState(() {
+        _inDrag = true;
+        _inReorder = true;
+      });
 
       widget.onReorderStarted?.call(dataSet[_dragIndex], _dragIndex);
 
@@ -515,6 +524,8 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void _cancelReorder() {
     setState(() {
+      _inDrag = false;
+      _inReorder = false;
       dragItem = null;
       _onDragEnd = null;
       _dragWidget = null;
