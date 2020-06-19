@@ -238,7 +238,7 @@ class _SliverImplicitlyAnimatedListState<E>
         final item = dataSet[index];
         final didChange = changes[item] != null;
 
-        if (widget.updateItemBuilder != null && didChange) {
+        if (updateItemBuilder != null && didChange) {
           return buildUpdatedItemWidget(item);
         } else {
           return itemBuilder(context, animation, item, index);

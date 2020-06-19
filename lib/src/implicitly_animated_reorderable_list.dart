@@ -300,10 +300,6 @@ class ImplicitlyAnimatedReorderableListState<E>
       return;
     }
 
-    /* print('c $delta');
-    print('min ${scrollOffset}');
-    print('max $maxDelta'); */
-
     _findClosestItem();
 
     if (_next == null || _next.key == dragKey) return;
@@ -482,16 +478,18 @@ class ImplicitlyAnimatedReorderableListState<E>
           _measureChild(_next.key);
         }
 
-        final toIndex = _itemBoxes[_next.key].index;
-        final item = dataSet.removeAt(_dragIndex);
-        dataSet.insert(toIndex, item);
+        final toIndex = _itemBoxes[_next.key]?.index;
+        if (toIndex != null) {
+          final item = dataSet.removeAt(_dragIndex);
+          dataSet.insert(toIndex, item);
 
-        widget.onReorderFinished?.call(
-          item,
-          _dragIndex,
-          toIndex,
-          List<E>.from(dataSet),
-        );
+          widget.onReorderFinished?.call(
+            item,
+            _dragIndex,
+            toIndex,
+            List<E>.from(dataSet),
+          );
+        }
       }
 
       _cancelReorder();
@@ -677,7 +675,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     final EdgeInsets listPadding = widget.padding ?? EdgeInsets.zero;
 
     return ValueListenableBuilder<double>(
-      //ignore: sort_child_properties_last
+      // ignore: sort_child_properties_last
       child: _dragWidget,
       valueListenable: _pointerDeltaNotifier,
       builder: (context, pointer, dragWidget) {
@@ -710,6 +708,8 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   @override
   Widget buildUpdatedItemWidget(E newItem) {
+    assert(updateItemBuilder != null);
+
     // We need to override this method, as AnimatedBuilder is not
     // supported as a top-level item widget in reorderable lists.
 
@@ -733,7 +733,9 @@ class ImplicitlyAnimatedReorderableListState<E>
             didUpdateList = true;
           }
 
-          changes.keys.forEach(buildUpdatedItemWidget);
+          if (updateItemBuilder != null) {
+            changes.keys.forEach(buildUpdatedItemWidget);
+          }
         }
       })
       ..addStatusListener((status) {
