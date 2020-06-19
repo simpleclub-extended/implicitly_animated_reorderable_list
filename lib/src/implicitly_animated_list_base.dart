@@ -241,7 +241,7 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
   @nonVirtual
   @protected
   Widget buildItem(BuildContext context, Animation<double> animation, E item, int index) {
-    if (widget.updateItemBuilder != null && changes[item] != null) {
+    if (updateItemBuilder != null && changes[item] != null) {
       return buildUpdatedItemWidget(item);
     }
 

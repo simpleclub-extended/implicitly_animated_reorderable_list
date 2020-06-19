@@ -219,8 +219,14 @@ class ImplicitlyAnimatedReorderableListState<E>
   bool _motionUp = false;
   bool get _up => _dragDelta.isNegative;
 
+  // Whether there is an item in the list that is currently being
+  // dragged/reordered.
   bool _inDrag = false;
   bool get inDrag => _inDrag;
+  // Whether there is an item in the list that is currently being
+  // reordered or moving towards its destination position.
+  bool _inReorder = false;
+  bool get inReorder => _inReorder;
 
   double _dragStartOffset;
   double _dragStartScrollOffset;
@@ -278,7 +284,10 @@ class ImplicitlyAnimatedReorderableListState<E>
       _dragStartScrollOffset = scrollOffset;
       _findClosestItem();
 
-      setState(() => _inDrag = true);
+      setState(() {
+        _inDrag = true;
+        _inReorder = true;
+      });
 
       widget.onReorderStarted?.call(data[_dragIndex], _dragIndex);
 
@@ -307,10 +316,6 @@ class ImplicitlyAnimatedReorderableListState<E>
     if (delta < minDelta || delta > maxDelta) {
       return;
     }
-
-    /* print('c $delta');
-    print('min ${scrollOffset}');
-    print('max $maxDelta'); */
 
     _findClosestItem();
 
@@ -391,7 +396,10 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void _dispatchMove(Key key, double delta, {VoidCallback onEnd}) {
     double value = 0.0;
-    final oldController = _itemTranslations[key];
+
+    // Remove and stop the old controller if there was one
+    // and start from the value where it left off.
+    final oldController = _itemTranslations.remove(key);
     if (oldController != null) {
       value = oldController.value;
 
@@ -487,16 +495,18 @@ class ImplicitlyAnimatedReorderableListState<E>
           _measureChild(_next.key);
         }
 
-        final toIndex = _itemBoxes[_next.key].index;
-        final item = data.removeAt(_dragIndex);
-        data.insert(toIndex, item);
+        final toIndex = _itemBoxes[_next.key]?.index;
+        if (toIndex != null) {
+          final item = data.removeAt(_dragIndex);
+          data.insert(toIndex, item);
 
-        widget.onReorderFinished?.call(
-          item,
-          _dragIndex,
-          toIndex,
-          List<E>.from(data),
-        );
+          widget.onReorderFinished?.call(
+            item,
+            _dragIndex,
+            toIndex,
+            List<E>.from(data),
+          );
+        }
       }
 
       _cancelReorder();
@@ -532,6 +542,8 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   void _cancelReorder() {
     setState(() {
+      _inDrag = false;
+      _inReorder = false;
       dragItem = null;
       _onDragEnd = null;
       _dragWidget = null;
@@ -669,6 +681,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     );
 
     return Stack(
+      overflow: Overflow.visible,
       children: <Widget>[
         scrollView,
         if (_dragWidget != null) _buildDraggedItem(),
@@ -680,7 +693,7 @@ class ImplicitlyAnimatedReorderableListState<E>
     final EdgeInsets listPadding = widget.padding ?? EdgeInsets.zero;
 
     return ValueListenableBuilder<double>(
-      //ignore: sort_child_properties_last
+      // ignore: sort_child_properties_last
       child: _dragWidget,
       valueListenable: _pointerDeltaNotifier,
       builder: (context, pointer, dragWidget) {
@@ -713,6 +726,8 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   @override
   Widget buildUpdatedItemWidget(E newItem) {
+    assert(updateItemBuilder != null);
+
     // We need to override this method, as AnimatedBuilder is not
     // supported as a top-level item widget in reorderable lists.
 
@@ -736,7 +751,9 @@ class ImplicitlyAnimatedReorderableListState<E>
             didUpdateList = true;
           }
 
-          changes.keys.forEach(buildUpdatedItemWidget);
+          if (updateItemBuilder != null) {
+            changes.keys.forEach(buildUpdatedItemWidget);
+          }
         }
       })
       ..addStatusListener((status) {

@@ -60,20 +60,22 @@ class _HandleState extends State<Handle> {
   // scrollDirection of Axis.vertical.
   bool get _isVertical => _list?.isVertical ?? true;
 
-  bool _inDrag = false;
-
   double _initialOffset;
   double _currentOffset;
   double get _delta => (_currentOffset ?? 0) - (_initialOffset ?? 0);
+
+  // Use flags from the list as this State object is being
+  // recreated between dragged and normal state.
+  bool get _inDrag => _list.inDrag ?? false;
+  bool get _inReorder => _list.inReorder ?? false;
 
   void _onDragStarted(Offset pointer) {
     _removeScrollListener();
 
     // If the list is already in drag we dont want to
     // initiate a new reorder.
-    if (_list.inDrag) return;
+    if (_inReorder) return;
 
-    _inDrag = true;
     _initialOffset = _isVertical ? pointer.dy : pointer.dx;
 
     _list?.onDragStarted(_reorderable?.key);
@@ -88,8 +90,6 @@ class _HandleState extends State<Handle> {
   }
 
   void _onDragEnded() {
-    _inDrag = false;
-
     _handler?.cancel();
     _list?.onDragEnded();
   }
@@ -164,7 +164,9 @@ class _HandleState extends State<Handle> {
         final pointer = event.localPosition;
         final delta = _isVertical ? event.delta.dy : event.delta.dx;
 
-        if (_inDrag) _onDragUpdated(pointer, delta.isNegative);
+        if (_inDrag && _inReorder) {
+          _onDragUpdated(pointer, delta.isNegative);
+        }
       },
       onPointerUp: (_) => _cancelReorder(),
       onPointerCancel: (_) => _cancelReorder(),
