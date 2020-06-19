@@ -26,16 +26,9 @@ class VerticalNestedExampleState extends State<VerticalNestedExample> {
   }
 
   void setTimer() {
-    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
       setState(() => nestedList.shuffle());
-
-      Future.delayed(
-        const Duration(milliseconds: 200),
-        () {
-          setState(() => nestedList.shuffle());
-          print(nestedList);
-        },
-      );
+      print(nestedList);
     });
   }
 
