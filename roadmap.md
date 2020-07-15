@@ -1,6 +1,6 @@
 # Roadmap
 
-Here are some of the features that I am working on or planning to implement in future versions.
+Here are some of the features that I am working on or plan to implement in future versions.
 
 - [ ] Absorb pointer events in `Handle`.
 - [ ] Support implicitly animated widgets for `ImplicitlyAnimatedReorderableList`

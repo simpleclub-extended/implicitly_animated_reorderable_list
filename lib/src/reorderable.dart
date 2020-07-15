@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'src.dart';
 
-typedef ReorderableBuilder = Widget Function(BuildContext context, Animation<double> animation, bool inDrag);
+typedef ReorderableBuilder = Widget Function(
+    BuildContext context, Animation<double> animation, bool inDrag);
 
 /// The parent widget of every item in an [ImplicitlyAnimatedReorderableList].
 class Reorderable extends StatefulWidget {
@@ -26,7 +27,8 @@ class Reorderable extends StatefulWidget {
   ///
   /// A [key] must be specified that uniquely identifies this Reorderable
   /// in the list. The value of the key should not change throughout
-  /// the lifecycle of the item.
+  /// the lifecycle of the item. For example if your item has a unique id,
+  /// you could use that with a `ValueKey`.
   ///
   /// Either [builder] or [child] must be specified. The [builder]
   /// can be used for custom animations when the item should be animated
@@ -50,28 +52,23 @@ class Reorderable extends StatefulWidget {
 }
 
 class ReorderableState extends State<Reorderable> with SingleTickerProviderStateMixin {
-  ValueKey key;
+  Key key;
 
   AnimationController _dragController;
   CurvedAnimation _dragAnimation;
-
-  ImplicitlyAnimatedReorderableListState _list;
   Animation<double> _translation;
 
-  Duration duration;
+  bool _isVertical = true;
 
   @override
   void initState() {
     super.initState();
-    _dragController = AnimationController(vsync: this, duration: Duration.zero);
-    key = widget.key ?? ValueKey(DateTime.now().microsecondsSinceEpoch);
+    key = widget.key ?? UniqueKey();
 
-    didUpdateWidget(widget);
-  }
-
-  @override
-  void didUpdateWidget(Reorderable oldWidget) {
-    super.didUpdateWidget(oldWidget);
+    _dragController = AnimationController(
+      duration: Duration.zero,
+      vsync: this,
+    );
 
     _dragAnimation = CurvedAnimation(
       parent: _dragController,
@@ -101,13 +98,14 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
   }
 
   void _registerItem() {
-    _list ??= ImplicitlyAnimatedReorderableList.of(context);
-    assert(_list != null, 'No ImplicitlyAnimatedListView was found in the hirachy!');
+    final list = ImplicitlyAnimatedReorderableList.of(context);
+    assert(list != null, 'No ImplicitlyAnimatedListView was found in the hirachy!');
 
-    _list?.registerItem(this);
-    _dragController.duration = _list.widget.dragDuration;
+    list?.registerItem(this);
+    _dragController.duration = list.widget.dragDuration;
 
-    inDrag = _list.dragItem?.key == key && _list.inDrag;
+    inDrag = list.dragItem?.key == key && list.inDrag;
+    _isVertical = list?.isVertical ?? true;
   }
 
   @override
@@ -134,8 +132,6 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
     }
 
     if (_translation != null) {
-      final isVertical = _list.isVertical;
-
       return AnimatedBuilder(
         child: child,
         animation: _translation,
@@ -144,8 +140,8 @@ class ReorderableState extends State<Reorderable> with SingleTickerProviderState
 
           return Transform.translate(
             offset: Offset(
-              isVertical ? 0 : offset,
-              isVertical ? offset : 0,
+              _isVertical ? 0.0 : offset,
+              _isVertical ? offset : 0.0,
             ),
             child: child,
           );

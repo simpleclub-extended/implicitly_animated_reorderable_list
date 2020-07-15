@@ -8,11 +8,13 @@ import 'src.dart';
 
 typedef ReorderStartedCallback<E> = void Function(E item, int index);
 
-typedef ReorderFinishedCallback<E> = void Function(E item, int from, int to, List<E> newItems);
+typedef ReorderFinishedCallback<E> = void Function(
+    E item, int from, int to, List<E> newItems);
 
 /// A Flutter ListView that implicitly animates between the changes of two lists with
 /// the support to reorder its items.
-class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Reorderable, E> {
+class ImplicitlyAnimatedReorderableList<E>
+    extends ImplicitlyAnimatedListBase<Reorderable, E> {
   /// Whether the scroll view scrolls in the reading direction.
   ///
   /// Defaults to false.
@@ -175,15 +177,16 @@ class ImplicitlyAnimatedReorderableList<E> extends ImplicitlyAnimatedListBase<Re
         );
 
   @override
-  ImplicitlyAnimatedReorderableListState<E> createState() => ImplicitlyAnimatedReorderableListState<E>();
+  ImplicitlyAnimatedReorderableListState<E> createState() =>
+      ImplicitlyAnimatedReorderableListState<E>();
 
   static ImplicitlyAnimatedReorderableListState of(BuildContext context) {
     return context.findAncestorStateOfType<ImplicitlyAnimatedReorderableListState>();
   }
 }
 
-class ImplicitlyAnimatedReorderableListState<E>
-    extends ImplicitlyAnimatedListBaseState<Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
+class ImplicitlyAnimatedReorderableListState<E> extends ImplicitlyAnimatedListBaseState<
+    Reorderable, ImplicitlyAnimatedReorderableList<E>, E> {
   // The key of the custom scroll view.
   final GlobalKey _listKey = GlobalKey(debugLabel: 'list_key');
   // The key of the draggedItem.
@@ -200,7 +203,6 @@ class ImplicitlyAnimatedReorderableListState<E>
   double _footerHeight = 0.0;
 
   Timer _scrollAdjuster;
-
   ScrollController _controller;
   ScrollController get scrollController => _controller;
 
@@ -210,7 +212,7 @@ class ImplicitlyAnimatedReorderableListState<E>
 
   bool get isVertical => widget.scrollDirection != Axis.horizontal;
 
-  double _listSize = 0;
+  double _listSize = 0.0;
   double get scrollOffset => _canScroll ? _controller.offset : 0.0;
   double get _maxScrollOffset => _controller?.position?.maxScrollExtent ?? 0.0;
   double get _scrollDelta => scrollOffset - _dragStartScrollOffset;
@@ -228,8 +230,8 @@ class ImplicitlyAnimatedReorderableListState<E>
   bool _inReorder = false;
   bool get inReorder => _inReorder;
 
-  double _dragStartOffset;
-  double _dragStartScrollOffset;
+  double _dragStartOffset = 0.0;
+  double _dragStartScrollOffset = 0.0;
   Key get dragKey => dragItem?.key;
   int get _dragIndex => dragItem?.index;
   double get _dragStart => dragItem.start + _dragDelta;
@@ -307,8 +309,9 @@ class ImplicitlyAnimatedReorderableListState<E>
     final overscrollBound = _canScroll && !(hasHeader || hasFooter) ? _dragSize : 0;
     // Constrain the dragged item to the bounds of the list.
     final minDelta = (_headerHeight - (dragItem.start + overscrollBound)) - _scrollDelta;
-    final maxDelta =
-        ((_maxScrollOffset + _listSize + overscrollBound) - (dragItem.bottom + _footerHeight)) - _scrollDelta;
+    final maxDelta = ((_maxScrollOffset + _listSize + overscrollBound) -
+            (dragItem.bottom + _footerHeight)) -
+        _scrollDelta;
 
     _pointerDelta = delta.clamp(minDelta, maxDelta);
     _dragDelta = _pointerDelta + _scrollDelta;
@@ -565,7 +568,8 @@ class ImplicitlyAnimatedReorderableListState<E>
     _controller.jumpTo(_controller.offset);
   }
 
-  double getTranslation(Key key) => key == dragKey ? _dragDelta : _itemTranslations[key]?.value ?? 0.0;
+  double getTranslation(Key key) =>
+      key == dragKey ? _dragDelta : _itemTranslations[key]?.value ?? 0.0;
 
   void registerItem(ReorderableState item) {
     _items[item.key] = item;
@@ -635,7 +639,7 @@ class ImplicitlyAnimatedReorderableListState<E>
         SliverPadding(
           padding: widget.padding ?? EdgeInsets.zero,
           sliver: SliverAnimatedList(
-            // * Assign the animation key to the sliver *
+            // Assign the animation key to the sliver
             key: animatedListKey,
             initialItemCount: newList.length,
             itemBuilder: (context, index, animation) {
@@ -799,7 +803,9 @@ class _Item extends Rect implements Comparable<_Item> {
   double distance;
 
   @override
-  int compareTo(_Item other) => distance != null && other.distance != null ? distance.compareTo(other.distance) : -1;
+  int compareTo(_Item other) => distance != null && other.distance != null
+      ? distance.compareTo(other.distance)
+      : -1;
 
   @override
   String toString() => '_Item key: $key, index: $index';
