@@ -176,9 +176,11 @@ abstract class ImplicitlyAnimatedListBaseState<W extends Widget, B extends Impli
       );
 
       final diffs = await _diffOperation.value;
-      if (diffs == null) return;
+      if (diffs == null || !mounted) return;
 
       await _delegate.applyDiffs(diffs);
+      if (!mounted) return;
+      
       setState(() {
         _data = List.from(_newItems);
       });
