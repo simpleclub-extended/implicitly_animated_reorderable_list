@@ -685,7 +685,6 @@ class ImplicitlyAnimatedReorderableListState<E> extends ImplicitlyAnimatedListBa
     );
 
     return Stack(
-      overflow: Overflow.visible,
       children: <Widget>[
         scrollView,
         if (_dragWidget != null) _buildDraggedItem(),
